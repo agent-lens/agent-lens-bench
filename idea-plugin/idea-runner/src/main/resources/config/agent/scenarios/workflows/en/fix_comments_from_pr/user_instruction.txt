@@ -1,6 +1,6 @@
 The agent must automatically resolve review comments from a Pull Request.
 When the agent asks for the task description, reply:
-https://github.com/agent-lens/dataset/pull/9
+https://github.com/anonymous/dataset/pull/9
 Answer all of the agent's clarifying questions briefly and always agree.
 If the agent asks for additional information or context, reply: There is no more information.
 Make sure the agent simplifies the if-expressions in the getRedirectPage function of the KwAuthenticationSuccessHandler class.

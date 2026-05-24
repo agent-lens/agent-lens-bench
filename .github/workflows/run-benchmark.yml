@@ -60,7 +60,7 @@ jobs:
   run-bench-fold:
     name: Run benchmark on data folds
     runs-on: ubuntu-latest
-    container: ghcr.io/agent-lens/benchmark:v1.0.0
+    container: ghcr.io/anonymous/benchmark:v1.0.0
     env:
       SIMULATOR_MODEL_NAME: ${{ vars.SIMULATOR_MODEL_NAME }}
       SIMULATOR_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
@@ -82,14 +82,14 @@ jobs:
           - project: 'idea-runner'
             config_name: workflows.json
             artifact_name: java-workflows
-            repository: agent-lens/dataset
+            repository: anonymous/dataset
             dataset_subdir: 'dataset'
             run_condition: ${{ inputs.run_java_workflow }}
 
           - project: 'pycharm-runner'
             config_name: workflows.json
             artifact_name: python-workflows
-            repository: agent-lens/dataset
+            repository: anonymous/dataset
             dataset_subdir: 'todo'
             run_condition: ${{ inputs.run_python_workflow }}
 
@@ -119,7 +119,7 @@ jobs:
           pip install virtualenv
           virtualenv --system-site-packages .venv
           source .venv/bin/activate
-          pip install --no-cache-dir -r ./agent_lens/agent_server/requirements.txt
+          pip install --no-cache-dir -r ./anonymous/agent_server/requirements.txt
 
       - name: Install Claude Code CLI
         if: ${{ matrix.run_condition && inputs.use_claude_code_engine }}
@@ -195,7 +195,7 @@ jobs:
         run: |
           mkdir -p "$CLAUDE_DUMPS_DIR"
           source .venv/bin/activate
-          cd ./agent_lens/agent_server
+          cd ./anonymous/agent_server
           uvicorn main:app \
             --access-log \
             --log-level debug \
@@ -237,7 +237,7 @@ jobs:
 
           echo "Server did not become healthy in time"
           echo "---- uvicorn.log ----"
-          tail -200 ./agent_lens/agent_server/uvicorn.log || true
+          tail -200 ./anonymous/agent_server/uvicorn.log || true
           exit 1
 
       - name: Run agent bench
@@ -282,7 +282,7 @@ jobs:
         with:
           name: '[${{ matrix.artifact_name }}] uvicorn-logs-${{ github.run_id }}'
           path: |
-            ./agent_lens/agent_server/uvicorn.log
+            ./anonymous/agent_server/uvicorn.log
           if-no-files-found: warn
 
       - name: Upload idea logs folder
@@ -349,14 +349,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r ./agent_lens/eval/requirements.txt
+          pip install -r ./anonymous/eval/requirements.txt
 
       - name: Merge data folds and upload to clearMl
         id: upload_and_merge_idea_dumps
         run: |
           set -euo pipefail
 
-          current_run_name="$(python3 -m agent_lens.eval.cli.merge_folds_and_publish \
+          current_run_name="$(python3 -m anonymous.eval.cli.merge_folds_and_publish \
             -i "$GITHUB_WORKSPACE/agent-benchmark-logs" \
             -o "$GITHUB_WORKSPACE/merged-agent-benchmark-logs" \
             --is_nightly_mode false \
@@ -367,7 +367,7 @@ jobs:
 
       - name: Evaluate metrics
         run: |
-          python3 -m agent_lens.eval.cli.run_agent_bench \
+          python3 -m anonymous.eval.cli.run_agent_bench \
             --dump_dir $GITHUB_WORKSPACE/eval_result \
             --idea_logs_path $GITHUB_WORKSPACE/merged-agent-benchmark-logs \
             --disable_tracking true

@@ -1,15 +1,15 @@
 <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
     <extensionPoints>
         <extensionPoint
-                qualifiedName="com.agentlens.benchmark.serializationService"
-                interface="com.agentlens.benchmark.common.runner.agent.BenchmarkSerializationService"
+                qualifiedName="com.anonymous.benchmark.serializationService"
+                interface="com.anonymous.benchmark.common.runner.agent.BenchmarkSerializationService"
         />
         <extensionPoint
-                qualifiedName="com.agentlens.benchmark.common.fileProblemsProvider"
-                interface="com.agentlens.benchmark.common.utils.staticAnalysis.FileProblemsProvider"/>
+                qualifiedName="com.anonymous.benchmark.common.fileProblemsProvider"
+                interface="com.anonymous.benchmark.common.utils.staticAnalysis.FileProblemsProvider"/>
         <extensionPoint
-                qualifiedName="com.agentlens.benchmark.common.ideBuildSystem"
-                interface="com.agentlens.benchmark.common.utils.buildSystem.IdeBuildSystem"/>
+                qualifiedName="com.anonymous.benchmark.common.ideBuildSystem"
+                interface="com.anonymous.benchmark.common.utils.buildSystem.IdeBuildSystem"/>
     </extensionPoints>
 
     <depends>com.intellij.modules.platform</depends>

@@ -1,7 +1,7 @@
 The agent must refactor integration tests and extract the repeated setup code into a single package io.aiven.klaw.testdata.
 
 When the agent asks what the task is, reply:
-https://github.com/agent-lens/dataset/issues/8
+https://github.com/anonymous/dataset/issues/8
 
 Answer all subsequent questions from the agent briefly, on point, and agree if it follows the instruction.
 Do not give the agent any additional tasks not described in the first message.

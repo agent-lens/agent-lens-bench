@@ -13,8 +13,8 @@
     <depends>com.intellij.gradle</depends>
 
     <actions>
-        <action id="com.agentlens.benchmark.actions.RunAgentBenchmarkAction"
-                class="com.agentlens.benchmark.actions.RunAgentBenchmarkAction"
+        <action id="com.anonymous.benchmark.actions.RunAgentBenchmarkAction"
+                class="com.anonymous.benchmark.actions.RunAgentBenchmarkAction"
                 text="Run Agent Benchmark"
                 description="Run agent simulation for selected scenarios">
             <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
@@ -22,14 +22,14 @@
     </actions>
 
     <applicationListeners>
-        <listener class="com.agentlens.benchmark.runner.agent.JavaAgentBenchHeadlessStartupActivity"
+        <listener class="com.anonymous.benchmark.runner.agent.JavaAgentBenchHeadlessStartupActivity"
                   topic="com.intellij.ide.AppLifecycleListener"/>
     </applicationListeners>
 
-    <extensions defaultExtensionNs="com.agentlens.benchmark">
-        <common.ideBuildSystem implementation="com.agentlens.benchmark.utils.buildSystem.IdeaBuildSystem"/>
+    <extensions defaultExtensionNs="com.anonymous.benchmark">
+        <common.ideBuildSystem implementation="com.anonymous.benchmark.utils.buildSystem.IdeaBuildSystem"/>
         <serializationService
-                implementation ="com.agentlens.benchmark.runner.agent.IdeaSpecificBenchmarkSerializationService"/>
+                implementation ="com.anonymous.benchmark.runner.agent.IdeaSpecificBenchmarkSerializationService"/>
     </extensions>
 
 </idea-plugin>

@@ -1,6 +1,6 @@
 
 plugins {
-    id("agent.lens.idea-kotlin-conventions")
+    id("anonymous.idea-kotlin-conventions")
 }
 
 dependencies {

@@ -1,5 +1,5 @@
 plugins {
-    id("agent.lens.pycharm-kotlin-conventions")
+    id("anonymous.pycharm-kotlin-conventions")
 }
 
 

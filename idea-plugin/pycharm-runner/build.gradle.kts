@@ -1,7 +1,7 @@
 import org.jetbrains.intellij.platform.gradle.tasks.RunIdeTask
 
 plugins {
-    id("agent.lens.pycharm-kotlin-conventions")
+    id("anonymous.pycharm-kotlin-conventions")
 }
 
 dependencies {
@@ -41,6 +41,6 @@ gradle.taskGraph.whenReady {
 
 tasks.register("runHeadless") {
     group = "intellij platform"
-    description = "Run Python AgentLens Benchmark in Headless Mode"
+    description = "Run Python Anonymous Benchmark in Headless Mode"
     dependsOn("runIde")
 }

@@ -1,7 +1,7 @@
 import org.jetbrains.intellij.platform.gradle.tasks.RunIdeTask
 
 plugins {
-    id("agent.lens.idea-kotlin-conventions")
+    id("anonymous.idea-kotlin-conventions")
 }
 
 dependencies {
@@ -42,6 +42,6 @@ gradle.taskGraph.whenReady {
 
 tasks.register("runHeadless") {
     group = "intellij platform"
-    description = "Run Idea AgentLens Benchmark in Headless Mode"
+    description = "Run Idea Anonymous Benchmark in Headless Mode"
     dependsOn("runIde")
 }

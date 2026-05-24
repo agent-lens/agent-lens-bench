@@ -1,9 +1,9 @@
 <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
-    <id>com.agentlens.bench</id>
-    <name>AgentLens Benchmark</name>
-    <vendor>AgentLens</vendor>
+    <id>com.anonymous.bench</id>
+    <name>Anonymous Benchmark</name>
+    <vendor>Anonymous</vendor>
 
-    <description>AgentLens Benchmark entrypoint to run headless pycharm</description>
+    <description>Anonymous Benchmark entrypoint to run headless pycharm</description>
 
     <xi:include href="benchmark-common-plugin.xml" xpointer="xpointer(/idea-plugin/*)"/>
     <xi:include href="benchmark-pycharm-specific-plugin.xml" xpointer="xpointer(/idea-plugin/*)"/>

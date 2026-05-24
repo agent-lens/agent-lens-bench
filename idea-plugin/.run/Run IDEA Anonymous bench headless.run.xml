@@ -1,0 +1,44 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run IDEA Anonymous bench headless" type="GradleRunConfiguration" factoryName="Gradle">
+    <log_file alias="idea.log" path="$PROJECT_DIR$/.intellijPlatform/sandbox/idea-runner/IU-*/log/idea.log" />
+    <ExternalSystemSettings>
+      <option name="env">
+        <map>
+          <entry key="MODEL_NAME" value="TODO" />
+          <entry key="MODEL_URL" value="TODO" />
+          <entry key="PROVIDER_NAME" value="OpenAI-compatible" />
+          <entry key="AGENT_API_KEY" value="TODO" />
+          <entry key="SIMULATOR_API_KEY" value="TODO" />
+          <entry key="GITHUB_TOKEN" value="TODO" />
+          <entry key="CLEAR_FOLDER" value="true" />
+          <entry key="USE_ALL_USERS" value="true" />
+          <entry key="PROJECTS_ROOT_DIR" value="$PROJECT_DIR$/dataset" />
+          <entry key="CONFIG_FILE_PATH" value="config/agent/workflows.json" />
+          <entry key="WHERE_TO_SAVE_DUMPS" value="$PROJECT_DIR$/bench_output" />
+          <entry key="PLUGIN_COMMIT_HASH" value="" />
+        </map>
+      </option>
+      <option name="executionName" />
+      <option name="externalProjectPath" value="$PROJECT_DIR$" />
+      <option name="externalSystemIdString" value="GRADLE" />
+      <option name="scriptParameters" value="" />
+      <option name="taskDescriptions">
+        <list />
+      </option>
+      <option name="taskNames">
+        <list>
+          <option value=":idea-runner:runHeadless" />
+        </list>
+      </option>
+      <option name="vmOptions" />
+    </ExternalSystemSettings>
+    <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+    <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+    <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+    <DebugAllEnabled>false</DebugAllEnabled>
+    <RunAsTest>false</RunAsTest>
+    <GradleProfilingDisabled>false</GradleProfilingDisabled>
+    <GradleCoverageDisabled>false</GradleCoverageDisabled>
+    <method v="2" />
+  </configuration>
+</component>
