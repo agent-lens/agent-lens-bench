@@ -59,7 +59,7 @@ env:
 jobs:
   run-bench-fold:
     name: Run benchmark on data folds
-    runs-on: [ self-hosted, ex44 ]
+    runs-on: ubuntu-latest
     container: ghcr.io/agent-lens/benchmark:v1.0.0
     env:
       SIMULATOR_MODEL_NAME: ${{ vars.SIMULATOR_MODEL_NAME }}
@@ -306,7 +306,7 @@ jobs:
   eval-metrics:
     needs: [run-bench-fold]
     name: Evaluate benchmark results
-    runs-on: [ self-hosted, ex44 ]
+    runs-on: ubuntu-latest
     container: python:3.11-slim
     defaults:
       run:

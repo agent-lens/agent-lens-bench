@@ -14,8 +14,7 @@ permissions:
 jobs:
   pr-title:
     name: 'Title'
-    runs-on: [self-hosted, infra]
-    container: ubuntu:20.04
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
