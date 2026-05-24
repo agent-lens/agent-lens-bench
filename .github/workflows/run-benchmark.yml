@@ -1,0 +1,384 @@
+name: "Run benchmark"
+
+on:
+  workflow_dispatch:
+    inputs:
+      experiment_name:
+        required: true
+        type: string
+        description: "Experiment description"
+      agent_api_key:
+        required: false
+        type: string
+        description: "Agent API key (optional)"
+        default: ""
+      provider_name:
+        required: true
+        type: string
+        description: "Provider name"
+        default: "OpenAI-compatible"
+      model_name:
+        required: false
+        type: string
+        description: "Model name (for Community providers)"
+        default: ""
+      model_url:
+        required: false
+        type: string
+        description: "Model url (for OpenAI-Compatible provider)"
+        default: ""
+      run_java_workflow:
+        required: true
+        type: boolean
+        description: "Run Java workflows"
+        default: false
+      run_python_workflow:
+        required: true
+        type: boolean
+        description: "Run Python workflows"
+        default: false
+      use_all_users:
+        required: false
+        type: boolean
+        description: "Run each scenario on all user types"
+        default: true
+      max_parallel_jobs:
+        type: number
+        required: false
+        description: "Max parallel jobs to run java bench part"
+        default: 2
+      use_claude_code_engine:
+        required: true
+        type: boolean
+        description: "Run bench on Claude Code CLI"
+        default: false
+
+env:
+  CLAUDE_CODE_VERSION: 2.1.72
+
+jobs:
+  run-bench-fold:
+    name: Run benchmark on data folds
+    runs-on: [ self-hosted, ex44 ]
+    container: ghcr.io/agent-lens/benchmark:v1.0.0
+    env:
+      SIMULATOR_MODEL_NAME: ${{ vars.SIMULATOR_MODEL_NAME }}
+      SIMULATOR_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
+      SIMULATOR_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      AGENT_API_KEY: ${{ inputs.agent_api_key }}
+      USE_ALL_USERS: ${{ inputs.use_all_users }}
+      CLEAR_FOLDER: true
+      PROVIDER_NAME: ${{ inputs.provider_name }}
+      MODEL_NAME: ${{ inputs.model_name }}
+      MODEL_URL: ${{ inputs.model_url }}
+      GITHUB_TOKEN: ${{ secrets.PAT }}
+      EXP_NAME: ${{ inputs.experiment_name }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+    strategy:
+      max-parallel: ${{ fromJSON(inputs.max_parallel_jobs) }}
+      matrix:
+        include:
+          - project: 'idea-runner'
+            config_name: workflows.json
+            artifact_name: java-workflows
+            repository: agent-lens/dataset
+            dataset_subdir: 'dataset'
+            run_condition: ${{ inputs.run_java_workflow }}
+
+          - project: 'pycharm-runner'
+            config_name: workflows.json
+            artifact_name: python-workflows
+            repository: agent-lens/dataset
+            dataset_subdir: 'todo'
+            run_condition: ${{ inputs.run_python_workflow }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        if: ${{ matrix.run_condition }}
+        uses: actions/checkout@v6
+
+      - name: Checkout dataset repo
+        if: ${{ matrix.run_condition }}
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ matrix.repository }}
+          ref: main
+          token: ${{ env.GITHUB_TOKEN }}
+          path: dataset
+          fetch-depth: 0
+
+      - name: agent-server venv setup
+        if: ${{ matrix.run_condition && inputs.use_claude_code_engine }}
+        working-directory: .
+        run: |
+          pip install virtualenv
+          virtualenv --system-site-packages .venv
+          source .venv/bin/activate
+          pip install --no-cache-dir -r ./agent_lens/agent_server/requirements.txt
+
+      - name: Install Claude Code CLI
+        if: ${{ matrix.run_condition && inputs.use_claude_code_engine }}
+        working-directory: .
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash -s ${{ env.CLAUDE_CODE_VERSION }}
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Verify Claude Code installation
+        if: ${{ matrix.run_condition && inputs.use_claude_code_engine }}
+        run: |
+          set -eu
+          which claude
+          claude --version
+
+      - name: Dataset venv setup
+        if: ${{ matrix.project == 'benchmark-python' && matrix.run_condition }}
+        working-directory: ./dataset
+        run: |
+          pip install virtualenv
+          virtualenv --system-site-packages .venv
+          source .venv/bin/activate
+          pip install --no-cache-dir -r requirements.txt
+
+      - name: Debug ls
+        if: ${{ matrix.run_condition }}
+        run: |
+          echo '[GITHUB_WORKSPACE]------------------'
+          ls $GITHUB_WORKSPACE
+          echo '[GITHUB_WORKSPACE/dataset/<subdir>]------------------'
+          ls $GITHUB_WORKSPACE/dataset/${{ matrix.dataset_subdir }}
+
+      - name: Clean dumps folder
+        run: |
+          set -eu
+          rm -rf $GITHUB_WORKSPACE/dumps
+
+      - name: Debug ls2
+        if: ${{ matrix.run_condition }}
+        run: |
+          ls $GITHUB_WORKSPACE
+
+      - name: Add git path to trusted
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Get plugin hash commit
+        if: ${{ matrix.run_condition }}
+        run: |
+          set -eu
+          echo "PLUGIN_COMMIT_HASH=$( git rev-parse HEAD )" >> "$GITHUB_ENV"
+
+      - name: Debug
+        if: ${{ matrix.run_condition }}
+        run: |
+          printenv
+
+      - name: Start Claude Code server
+        if: ${{ matrix.run_condition && inputs.use_claude_code_engine }}
+        env:
+          IS_SANDBOX: 1 # A magic env var to fix Claude's --dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons
+          CLAUDE_DUMPS_DIR: ${{ github.workspace }}/claude-dumps/${{ matrix.artifact_name }}
+          # Route Claude CLI through the proxy directly via env vars.
+          ANTHROPIC_BASE_URL: ${{ env.MODEL_URL }}
+          ANTHROPIC_AUTH_TOKEN: ${{ env.AGENT_API_KEY }}
+          # Older Claude Code CLIs only read ANTHROPIC_API_KEY, not
+          # ANTHROPIC_AUTH_TOKEN. Set both to the same proxy token so whichever
+          # variable the CLI expects is populated.
+          ANTHROPIC_API_KEY: ${{ env.AGENT_API_KEY }}
+          # Use the same model for the /claude/health check as the benchmark
+          # itself, so we do not need a separate entry in the proxy allowlist.
+          CLAUDE_HEALTH_MODEL: ${{ env.MODEL_NAME }}
+        run: |
+          mkdir -p "$CLAUDE_DUMPS_DIR"
+          source .venv/bin/activate
+          cd ./agent_lens/agent_server
+          uvicorn main:app \
+            --access-log \
+            --log-level debug \
+            > uvicorn.log 2>&1 &
+
+      - name: Wait for Claude Code server startup
+        if: ${{ matrix.run_condition && inputs.use_claude_code_engine }}
+        run: |
+          set -euo pipefail
+
+          url="http://127.0.0.1:8000/claude/health"
+
+          for i in {1..10}; do
+            response="$(
+              curl -sS \
+                --connect-timeout 10 \
+                --max-time 10 \
+                -w "\n%{http_code}" \
+                "$url" \
+              || true
+            )"
+
+            code="$(printf '%s' "$response" | tail -n1)"
+            body="$(printf '%s' "$response" | sed '$d')"
+
+            if [ "$code" = "200" ]; then
+              echo "Health OK — response: $body"
+              exit 0
+            fi
+
+            if [ "$code" = "000" ]; then
+              echo "Waiting for server... (no HTTP response yet; connect/timeout) — curl: $body"
+            else
+              echo "Waiting for server... (got HTTP $code) — response: $body"
+            fi
+
+            sleep 2
+          done
+
+          echo "Server did not become healthy in time"
+          echo "---- uvicorn.log ----"
+          tail -200 ./agent_lens/agent_server/uvicorn.log || true
+          exit 1
+
+      - name: Run agent bench
+        if: ${{ matrix.run_condition }}
+        working-directory: ./idea-plugin
+        run: |
+          ./gradlew :${{ matrix.project }}:runHeadless --no-daemon --stacktrace
+        env:
+          PROJECTS_ROOT_DIR: ${{ github.workspace }}/dataset/${{ matrix.dataset_subdir }}
+          WHERE_TO_SAVE_DUMPS: ${{ github.workspace }}/dumps/${{ matrix.artifact_name }}
+          CONFIG_FILE_PATH: config/agent/${{ matrix.config_name }}
+          SIMULATOR_MODEL_NAME: ${{ env.SIMULATOR_MODEL_NAME }}
+          SIMULATOR_BASE_URL: ${{ env.SIMULATOR_BASE_URL }}
+          SIMULATOR_API_KEY: ${{ env.SIMULATOR_API_KEY }}
+          AGENT_API_KEY: ${{ env.AGENT_API_KEY }}
+          USE_ALL_USERS: ${{ env.USE_ALL_USERS }}
+          CLEAR_FOLDER: true
+          PROVIDER_NAME: ${{ env.PROVIDER_NAME }}
+          MODEL_NAME: ${{ env.MODEL_NAME }}
+          MODEL_URL: ${{ env.MODEL_URL }}
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+          EXP_NAME: ${{ env.EXP_NAME }}
+          AGENT_ENGINE_URL: ${{ inputs.use_claude_code_engine && 'http://127.0.0.1:8000/claude' || '' }}
+
+      - name: Debug3
+        if: ${{ always() && matrix.run_condition }}
+        run: |
+          ls dumps
+
+      - name: Upload Claude dumps
+        if: ${{ always() && matrix.run_condition && inputs.use_claude_code_engine }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: '[${{ matrix.artifact_name }}] claude-dumps-${{ github.run_id }}'
+          path: |
+            claude-dumps/${{ matrix.artifact_name }}/**
+          if-no-files-found: warn
+
+      - name: Upload uvicorn logs
+        if: ${{ always() && matrix.run_condition && inputs.use_claude_code_engine }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: '[${{ matrix.artifact_name }}] uvicorn-logs-${{ github.run_id }}'
+          path: |
+            ./agent_lens/agent_server/uvicorn.log
+          if-no-files-found: warn
+
+      - name: Upload idea logs folder
+        if: ${{ always() && matrix.run_condition }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: '[${{ matrix.artifact_name }}] idea-logs-${{ github.run_id }}'
+          path: |
+            ./idea-plugin/.intellijPlatform/sandbox/**/log/**
+          if-no-files-found: warn
+
+      - name: Upload benchmark ${{ matrix.artifact_name }} folder
+        if: ${{ always() && matrix.run_condition }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: '[${{ matrix.artifact_name }}] bench-logs-${{ github.run_id }}'
+          path: |
+            dumps/**
+          if-no-files-found: error
+
+  eval-metrics:
+    needs: [run-bench-fold]
+    name: Evaluate benchmark results
+    runs-on: [ self-hosted, ex44 ]
+    container: python:3.11-slim
+    defaults:
+      run:
+        shell: bash
+
+    outputs:
+      current_run_name: ${{ steps.upload_and_merge_idea_dumps.outputs.current_run_name }}
+
+    steps:
+      - name: Install git
+        run: |
+          apt-get update && apt-get install -yqq --no-install-recommends \
+            git-core
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Clean agent-benchmark-logs folder
+        run: |
+          rm -rf ${{ github.workspace }}/agent-benchmark-logs
+
+      - name: Download the benchmark result
+        uses: actions/download-artifact@v8
+        with:
+          pattern: '*bench-logs-${{ github.run_id }}'
+          merge-multiple: true
+          path: ${{ github.workspace }}/agent-benchmark-logs
+
+      - name: Debug ls
+        run: |
+          ls $GITHUB_WORKSPACE/agent-benchmark-logs
+
+      - name: Add git path to trusted
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Debug
+        run: |
+          printenv
+
+      - name: Install dependencies
+        run: |
+          pip install -r ./agent_lens/eval/requirements.txt
+
+      - name: Merge data folds and upload to clearMl
+        id: upload_and_merge_idea_dumps
+        run: |
+          set -euo pipefail
+
+          current_run_name="$(python3 -m agent_lens.eval.cli.merge_folds_and_publish \
+            -i "$GITHUB_WORKSPACE/agent-benchmark-logs" \
+            -o "$GITHUB_WORKSPACE/merged-agent-benchmark-logs" \
+            --is_nightly_mode false \
+            --is_weekly_mode false \
+            --disable_tracking true)"
+
+          echo "current_run_name=$current_run_name" >> "$GITHUB_OUTPUT"
+
+      - name: Evaluate metrics
+        run: |
+          python3 -m agent_lens.eval.cli.run_agent_bench \
+            --dump_dir $GITHUB_WORKSPACE/eval_result \
+            --idea_logs_path $GITHUB_WORKSPACE/merged-agent-benchmark-logs \
+            --disable_tracking true
+        env:
+          LLM_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Upload eval result folder
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: eval-agent-result-${{ github.run_id }}
+          path: |
+            eval_result/**
+          if-no-files-found: error

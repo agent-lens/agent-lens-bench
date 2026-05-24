@@ -1,0 +1,39 @@
+{
+  "verifiers": [
+    {
+      "type": "NoFileErrorsVerifier",
+      "path": "core/src/main/java/io/aiven/klaw/service/KafkaConnectControllerService.java",
+      "languages": ["java"]
+    },
+    {
+      "type": "YesChangesVerifier",
+      "target_files": [
+        "core/src/main/java/io/aiven/klaw/service/KafkaConnectControllerService.java"
+      ]
+    },
+    {
+      "type": "JavaRunTestsVerifier",
+      "build_system_name": "maven",
+      "command": ["mvn", "-pl", "core", "-am", "test"],
+      "test_pattern": "KafkaConnectControllerServiceTest"
+    },
+    {
+      "type": "RunBuildSystemTaskVerifier",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "compile"],
+      "reg_exp_pattern": "\\[INFO\\] BUILD SUCCESS"
+    }
+  ],
+  "project_path": "klaw",
+  "opened_files": ["core/src/main/java/io/aiven/klaw/service/KafkaConnectControllerService.java"],
+  "tags": ["workflows", "all"],
+  "language": "English",
+  "fixed_fst_user_message": true,
+  "preprocessors": [
+    {
+      "type": "RunBuildSystemTaskPreprocessor",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "install", "-fpom.xml"]
+    }
+  ]
+}

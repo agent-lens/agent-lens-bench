@@ -1,0 +1,6 @@
+The agent must perform a migration to a new version of a library. Detailed instructions for the agent on how to perform the migration are described in the first user message.
+When the agent asks "which library should be updated and to which version", reply: `Spring Boot to 3.5.6`.
+When the agent asks about the migration mode, reply: `I confirm Normal Mode`.
+Answer all subsequent questions briefly and agree with everything.
+End the chat as soon as the agent completes the last step of your instruction and the agent says it is done.
+Your goal is to ensure the agent correctly follows the instruction and updates Spring Boot to 3.5.6, so if it deviates from the instruction, correct its behavior.

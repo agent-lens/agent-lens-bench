@@ -1,0 +1,44 @@
+{
+  "verifiers": [
+    {
+      "type": "RunBuildSystemTaskVerifier",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "compile"],
+      "reg_exp_pattern": "\\[INFO\\] BUILD SUCCESS"
+    },
+    {
+      "type": "JavaRunTestsVerifier",
+      "build_system_name": "maven",
+      "command": ["mvn", "-pl", "core", "-am", "test"],
+      "test_pattern": "UserInfoModelTest"
+    },
+    {
+      "type": "YesChangesVerifier",
+      "target_files": ["core/src/test/java/io/aiven/klaw/UtilMethods.java"]
+    }
+  ],
+  "project_path": "klaw",
+  "opened_files": [],
+  "language": "English",
+  "fixed_fst_user_message": true,
+  "branch": "agent-bench/workflows-api-change",
+  "repo_hash": "924e6ce13c28a35be295317b096fd9ee7a551896",
+  "tags": ["workflows", "all"],
+  "mcp_servers": [
+    {
+        "name": "github",
+        "url": "https://api.githubcopilot.com/mcp",
+        "headers": {
+          "Authorization": "Bearer $GITHUB_TOKEN$"
+        },
+        "type": "http"
+    }
+  ],
+  "preprocessors": [
+    {
+      "type": "RunBuildSystemTaskPreprocessor",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "install", "-fpom.xml"]
+    }
+  ]
+}

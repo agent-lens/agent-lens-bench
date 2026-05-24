@@ -1,0 +1,31 @@
+**/.gradle
+
+**/build/
+**/buildSrc/build
+**/buildSrc/.gradle
+
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### IntelliJ IDEA ###
+**/.intellijPlatform
+**/.idea/**
+*.iws
+*.iml
+*.ipr
+
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Kotlin compiler ###
+**/.kotlin/
+/idea-plugin/bench_output

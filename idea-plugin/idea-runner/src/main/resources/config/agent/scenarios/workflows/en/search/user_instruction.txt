@@ -1,0 +1,5 @@
+The agent must find an answer to your question about the project. Detailed instructions for the agent on how to investigate the project are described in the first user message.
+When the agent asks you what exactly needs to be investigated, reply exactly: "How is the Kafka producer/consumer used in the project?".
+Answer all subsequent questions briefly and agree with everything.
+End the chat as soon as the agent completes the last step of your instruction and the agent says it is done.
+Your goal is to ensure the agent correctly follows the instruction and answers your question, so if it deviates from the instruction, correct its behavior.

@@ -1,0 +1,32 @@
+{
+  "budget_dollars_limit": 5.0,
+  "default_branch": "main",
+  "default_repo_hash": "d93085b3ca4cf6751bd7eff3a4ef3c0665b1379a",
+  "repo_url": "https://github.com/agent-lens/dataset/",
+  "agent_engine": {
+    "type": "ExplytCommonAgentEngine"
+  },
+  "scenario_paths": [
+    "config/agent/scenarios/workflows/en/add_logging",
+    "config/agent/scenarios/workflows/en/change_code",
+    "config/agent/scenarios/workflows/en/documentation",
+    "config/agent/scenarios/workflows/en/fix_comments_from_pr",
+    "config/agent/scenarios/workflows/en/fix_trace",
+    "config/agent/scenarios/workflows/en/generate_code_comments",
+    "config/agent/scenarios/workflows/en/migrate",
+    "config/agent/scenarios/workflows/en/refresh_tests_after_change",
+    "config/agent/scenarios/workflows/en/search",
+    "config/agent/scenarios/workflows/en/sync_changes",
+    "config/agent/scenarios/workflows/en/systematic_refactor",
+    "config/agent/scenarios/workflows/en/tests_refactor",
+    "config/agent/scenarios/workflows/en/unit_testing",
+
+    "config/agent/scenarios/workflows/en/document_task_template_api_and_dtos",
+    "config/agent/scenarios/workflows/en/document_task_template_grid_api",
+    "config/agent/scenarios/workflows/en/migrate_db_logic_to_java"
+  ],
+  "user_paths": [
+    "config/agent/users/default.txt",
+    "config/agent/users/toxic.txt"
+  ]
+}

@@ -1,0 +1,6 @@
+rank,agent,score,success_rate,cost,notes
+1,Claude Code (Opus),92.4,88%,$2.14,Strong planning and reliable tool use
+2,Codex (GPT-5.4),90.8,85%,$1.96,Fast iteration with balanced execution quality
+3,Gemini 2.5 Pro Agent,87.9,81%,$1.72,Good long-context reasoning
+4,OpenHands + Sonnet,84.3,76%,$1.41,Stable coding loop on medium tasks
+5,Cursor Agent,81.7,73%,$1.63,Strong UX but some regression on harder tasks

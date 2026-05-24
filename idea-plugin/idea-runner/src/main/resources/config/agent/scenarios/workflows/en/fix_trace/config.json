@@ -1,0 +1,24 @@
+{
+  "verifiers": [
+    {
+      "type": "JavaRunTestsVerifier",
+      "build_system_name": "maven",
+      "command": ["mvn", "-pl", "core", "-am", "test"],
+      "test_pattern": "EnvsClustersTenantsControllerIT"
+    }
+  ],
+  "project_path": "klaw",
+  "opened_files": ["core/src/test/java/io/aiven/klaw/EnvsClustersTenantsControllerIT.java"],
+  "branch": "agent-bench/workflows-with-bug",
+  "repo_hash": "7c1f3682c95e7200c63aa1c4c3633ce40295ea93",
+  "tags": ["workflows", "all"],
+  "language": "English",
+  "fixed_fst_user_message": true,
+  "preprocessors": [
+    {
+      "type": "RunBuildSystemTaskPreprocessor",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "install", "-fpom.xml"]
+    }
+  ]
+}

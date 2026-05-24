@@ -1,0 +1,37 @@
+{
+  "verifiers": [
+    {
+      "type": "RunBuildSystemTaskVerifier",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "compile"],
+      "reg_exp_pattern": "\\[INFO\\] BUILD SUCCESS"
+    },
+    {
+      "type": "NewFileRegExpVerifier",
+      "reg_exp_pattern": ".*"
+    }
+  ],
+  "project_path": "klaw",
+  "opened_files": [],
+  "tags": ["workflows", "all"],
+  "language": "English",
+  "fixed_fst_user_message": true,
+  "preprocessors": [
+    {
+      "type": "RunBuildSystemTaskPreprocessor",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "install", "-fpom.xml"]
+    }
+  ],
+  "mcp_servers": [
+    {
+      "name": "github",
+      "url": "https://api.githubcopilot.com/mcp",
+      "headers": {
+        "Authorization": "Bearer $GITHUB_TOKEN$"
+      },
+      "type": "http"
+    }
+  ]
+
+}

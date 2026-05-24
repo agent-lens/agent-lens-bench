@@ -1,0 +1,17 @@
+# Python 3.11.10
+
+json5==0.9.25
+jsonschema==4.23.0
+jsonschema-specifications==2023.7.1
+numpy==1.26.4
+scipy==1.16.3
+openai==1.69.0
+PyYAML==6.0.2
+requests==2.32.3
+tqdm==4.67.1
+httpx==0.28.1
+google-genai==1.16.1
+anthropic==0.52.1
+ruff==0.12.9
+clearml==2.0.2
+python-dateutil==2.9.0.post0

@@ -1,0 +1,5 @@
+The agent must apply a change to existing code based on a GitHub ticket. Detailed instructions for the agent on how to perform the change are described in the first user message.
+https://github.com/agent-lens/dataset/issues/6
+Answer all subsequent questions briefly and agree with everything.
+End the chat as soon as the agent completes the last step of your instruction and the agent says it is done.
+Your goal is to ensure the agent correctly follows the instruction and adds new endpoints, so if it deviates from the instruction, correct its behavior.

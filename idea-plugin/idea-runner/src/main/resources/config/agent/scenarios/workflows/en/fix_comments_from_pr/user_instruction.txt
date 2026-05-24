@@ -1,0 +1,10 @@
+The agent must automatically resolve review comments from a Pull Request.
+When the agent asks for the task description, reply:
+https://github.com/agent-lens/dataset/pull/9
+Answer all of the agent's clarifying questions briefly and always agree.
+If the agent asks for additional information or context, reply: There is no more information.
+Make sure the agent simplifies the if-expressions in the getRedirectPage function of the KwAuthenticationSuccessHandler class.
+Do not give the agent any additional tasks and do not expand the scope of work.
+If the agent deviates from the scenario or starts doing unnecessary actions — correct it and bring it back to addressing the PR review comments.
+
+Once the agent completes the last step of the scenario and the agent says it is done, end the chat.

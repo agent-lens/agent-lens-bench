@@ -1,0 +1,31 @@
+# Single source of truth for run tracking / publishing backends.
+#
+# Values:
+# - none: disable tracking/publishing
+# - clearml: ClearML tracking (requires SDK + configured credentials)
+tracking_backend: none
+
+# Optional alerting integration.
+# Values:
+# - none: disable alerts
+# - telegram: send alerts to Telegram via a bot token + chat id
+alerting_backend: none
+
+github_action_run_url: none
+
+# Credentials are taken from env vars:
+# - BENCHMARK_TELEGRAM_BOT_TOKEN
+# - BENCHMARK_TELEGRAM_BOT_CHAT_ID
+# Optional:
+# - BENCHMARK_TELEGRAM_BOT_MSG_THREAD_ID
+# - BENCHMARK_TELEGRAM_BOT_ASSIGNEE
+
+# ClearML SDK configuration should be done via `clearml-init` (credentials + server).
+clearml:
+  # Where tasks are created in ClearML.
+  eval_project_name: null
+  sbs_project_name: null
+
+  # Used only for composing links in alerts.
+  # Set this to enable tracking links.
+  task_url_template: null

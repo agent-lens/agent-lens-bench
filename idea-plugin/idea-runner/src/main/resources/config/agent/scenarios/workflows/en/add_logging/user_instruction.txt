@@ -1,0 +1,5 @@
+The agent must add logging to an existing class. Detailed instructions for the agent on how to add logging are described in the first user message.
+When the agent asks what should be logged, reply: "Add logging to KafkaConnectControllerService for the duration of external calls".
+Answer all subsequent questions briefly and agree with everything.
+End the chat as soon as the agent completes the last step of your instruction and the agent says it is done.
+Your goal is to ensure the agent correctly follows the instruction and adds logging to KafkaConnectControllerService, so if it deviates from the instruction, correct its behavior.

@@ -1,0 +1,28 @@
+judge_model: OpenAI/gpt-5.4
+judge_provider: openai_compatible   # one of: openai | openai_compatible | gemini | anthropic
+reasoning_effort: high
+prefer_flex_service_tier: true
+judge_model_reasoning_separator: null # '</think>'
+
+openai_compatible:
+  base_url: null
+
+max_completion_tokens: 25000
+max_num_API_requests: 1000
+
+review_style:
+  language: English
+  timezone: UTC
+  user_specific_style_prompt: ""
+
+eval:
+  split_report_with_tag:
+    general: 1
+    tests: 1
+    workflows: 1
+
+sbs:
+  tags_to_compare:
+    - "general"
+    - "tests"
+    - "workflows"

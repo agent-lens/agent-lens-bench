@@ -1,0 +1,9 @@
+The agent must perform a systematic refactoring to eliminate code duplication. Detailed instructions for the agent on how to perform the refactoring are described in the first user message.
+When the agent asks "what task should be solved?", reply:
+```
+Refactor the getUpdatedUserList() method in the ExportImportDataService class so that it no longer instantiates BasicTextEncryptor inside itself, no longer encrypts the same password in a loop for each user, and no longer mutates the input list. The encryption of the password must be extracted into a separate private method, performed exactly once, and the method itself must be rewritten so that it returns a new list of users with already updated passwords without modifying the original objects. The logic itself must not change.
+```.
+
+Answer all subsequent questions briefly and agree with everything.
+End the chat as soon as the agent completes the last step of your instruction and the agent says it is done.
+Your goal is to ensure the agent correctly follows the instruction and changes the ExportImportDataService class, so if it deviates from the instruction, correct its behavior.

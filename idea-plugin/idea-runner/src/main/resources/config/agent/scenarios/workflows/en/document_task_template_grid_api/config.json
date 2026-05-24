@@ -1,0 +1,86 @@
+{
+  "verifiers": [
+    {
+      "type": "RunBuildSystemTaskVerifier",
+      "build_system_name": "maven",
+      "path": ".",
+      "tasks": [
+        "-pl",
+        "rill-flow-web,rill-flow-task-template",
+        "-am",
+        "-DskipTests=true",
+        "compile"
+      ],
+      "reg_exp_pattern": "\\[INFO\\] BUILD SUCCESS"
+    },
+    {
+      "type": "RunBuildSystemTaskVerifier",
+      "build_system_name": "maven",
+      "path": ".",
+      "tasks": [
+        "-pl",
+        "rill-flow-web",
+        "-am",
+        "-Dtest=TaskTemplateControllerTest",
+        "-Dsurefire.failIfNoSpecifiedTests=false",
+        "test"
+      ]
+    },
+    {
+      "type": "YesChangesVerifier",
+      "target_files": [
+        "rill-flow-web/src/main/java/com/weibo/rill/flow/controller/TaskTemplateController.java",
+        "rill-flow-task-template/src/main/java/com/weibo/rill/flow/task/template/model/TaskTemplate.java",
+        "rill-flow-task-template/src/main/java/com/weibo/rill/flow/task/template/model/TaskTemplateParams.java"
+      ]
+    },
+    {
+      "type": "NoChangesVerifier",
+      "allowed_files": [
+        "rill-flow-web/src/main/java/com/weibo/rill/flow/controller/TaskTemplateController.java",
+        "rill-flow-task-template/src/main/java/com/weibo/rill/flow/task/template/model/TaskTemplate.java",
+        "rill-flow-task-template/src/main/java/com/weibo/rill/flow/task/template/model/TaskTemplateParams.java"
+      ],
+      "forbidden_globs": [
+        "rill-flow-web/src/test/**",
+        "rill-flow-task-template/src/test/**",
+        "**/pom.xml"
+      ]
+    },
+    {
+      "type": "JavaFileRegExpCountVerifier",
+      "search_in": "rill-flow-task-template/src/main/java/com/weibo/rill/flow/task/template/model/TaskTemplate.java",
+      "reg_exp_pattern": "nodeType|typeStr|createTime|updateTime",
+      "strict_count": false,
+      "num_expected": 4,
+      "uncommented_only": true
+    },
+
+    {
+      "type": "JavaFileRegExpCountVerifier",
+      "search_in": "rill-flow-web/src/main/java/com/weibo/rill/flow/controller/TaskTemplateController.java",
+      "reg_exp_pattern": "ApiOperation|ApiParam|ApiResponse|ApiResponses",
+      "strict_count": false,
+      "num_expected": 3,
+      "uncommented_only": true
+    },
+    {
+      "type": "JavaFileRegExpCountVerifier",
+      "search_in": "rill-flow-web/src/main/java/com/weibo/rill/flow/controller/TaskTemplateController.java",
+      "reg_exp_pattern": "page|page_size|id|name|category|type|node_type|enable",
+      "strict_count": false,
+      "num_expected": 8,
+      "uncommented_only": true
+    }
+  ],
+  "opened_files": [],
+  "project_path": "rill-flow",
+  "tags": ["workflows", "online", "all"],
+  "preprocessors": [
+    {
+      "type": "RunBuildSystemTaskPreprocessor",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "install", "-fpom.xml"]
+    }
+  ]
+}

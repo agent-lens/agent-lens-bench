@@ -1,0 +1,5 @@
+The agent must add comments to an existing class. Detailed instructions for the agent on how to add comments are described in the first user message.
+Ask the agent: "I need to add comments describing the business-logic behavior in the ApprovalService class. Comments must be in English".
+Answer all of the agent's questions briefly, confirm everything or ask it to find all the information in the repository.
+End the chat as soon as the agent completes the last step of your instruction and the agent says it is done.
+Your goal is to ensure the agent correctly follows the instruction and covers the entire ApprovalService class with English comments, so if it deviates from the instruction, correct its behavior.

@@ -1,0 +1,62 @@
+name: 'Release'
+
+on:
+  workflow_dispatch:
+
+permissions: write-all
+
+jobs:
+  release:
+    name: 'Release'
+    runs-on: [self-hosted, infra]
+    container: node:20-bullseye
+    defaults:
+      run:
+        shell: bash
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: 'Debug'
+        run: |
+          printenv
+
+      - name: 'Install and Configure applications'
+        run: |
+          apt-get update
+          apt-get install -yqq --no-install-recommends \
+            ca-certificates \
+            git-core
+          rm /bin/sh
+          ln -s /bin/bash /bin/sh
+
+      - name: 'Checkout repository'
+        uses: actions/checkout@v6
+
+      - name: 'Add git path to trusted'
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: 'Release'
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          semantic_version: 23.0.0
+          extra_plugins: |
+            @semantic-release/commit-analyzer@11.1.0
+            @semantic-release/exec@6.0.3
+            conventional-changelog-conventionalcommits@7.0.2
+
+      - name: 'Get release_version and pass to next job'
+        id: release_version
+        # see .releaserc.json to obtain certain file name
+        run: |
+          echo "RELEASE_VERSION=$(cat release_version.txt)" >> $GITHUB_OUTPUT
+
+    outputs:
+      release_version: ${{ steps.release_version.outputs.RELEASE_VERSION }}
+
+  publish-package:
+    needs: release
+    uses: ./.github/workflows/publish-github-packages.yml
+    with:
+      version: ${{ needs.release.outputs.release_version }}
+    secrets: inherit

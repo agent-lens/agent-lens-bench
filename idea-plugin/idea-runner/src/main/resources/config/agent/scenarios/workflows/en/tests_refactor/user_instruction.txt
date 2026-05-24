@@ -1,0 +1,12 @@
+The agent must refactor integration tests and extract the repeated setup code into a single package io.aiven.klaw.testdata.
+
+When the agent asks what the task is, reply:
+https://github.com/agent-lens/dataset/issues/8
+
+Answer all subsequent questions from the agent briefly, on point, and agree if it follows the instruction.
+Do not give the agent any additional tasks not described in the first message.
+
+End the chat as soon as the agent completes the last step of your instruction and the agent says it is done.
+
+Your goal is to ensure the agent correctly extracts the setup code into testdata and simplifies the integration tests.
+If the agent deviates from the instruction (adds unnecessary things, overcomplicates, breaks the separation between factories and scenarios) — correct its behavior and bring it back to the instruction.

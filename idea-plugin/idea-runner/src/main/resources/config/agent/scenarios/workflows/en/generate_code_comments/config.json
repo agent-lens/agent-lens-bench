@@ -1,0 +1,33 @@
+{
+  "verifiers": [
+    {
+      "type": "NoFileErrorsVerifier",
+      "path": "core/src/main/java/io/aiven/klaw/service/ApprovalService.java",
+      "languages": ["java"]
+    },
+    {
+      "type": "RunBuildSystemTaskVerifier",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "compile"],
+      "reg_exp_pattern": "\\[INFO\\] BUILD SUCCESS"
+    },
+    {
+      "type": "YesChangesVerifier",
+      "target_files": [
+        "core/src/main/java/io/aiven/klaw/service/ApprovalService.java"
+      ]
+    }
+  ],
+  "project_path": "klaw",
+  "opened_files": ["core/src/main/java/io/aiven/klaw/service/ApprovalService.java"],
+  "tags": ["workflows", "all"],
+  "language": "English",
+  "fixed_fst_user_message": true,
+  "preprocessors": [
+    {
+      "type": "RunBuildSystemTaskPreprocessor",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "install", "-fpom.xml"]
+    }
+  ]
+}

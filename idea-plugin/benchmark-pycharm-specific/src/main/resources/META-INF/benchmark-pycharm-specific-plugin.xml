@@ -1,0 +1,23 @@
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.python</depends>
+
+    <actions>
+        <action id="com.agentlens.benchmark.python.actions.RunAgentBenchmarkAction"
+                class="com.agentlens.benchmark.python.actions.RunPythonAgentBenchmarkAction"
+                text="Run Agent Benchmark"
+                description="Run agent simulation for selected scenarios">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
+        </action>
+    </actions>
+
+    <extensions defaultExtensionNs="com.agentlens.benchmark">
+        <serializationService
+                implementation ="com.agentlens.benchmark.python.runner.agent.PycharmSpecificBenchmarkSerializationService"/>
+    </extensions>
+
+    <applicationListeners>
+        <listener class="com.agentlens.benchmark.python.runner.agent.PythonAgentBenchHeadlessStartupActivity"
+                  topic="com.intellij.ide.AppLifecycleListener"/>
+    </applicationListeners>
+</idea-plugin>

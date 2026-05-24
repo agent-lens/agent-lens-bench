@@ -1,0 +1,8 @@
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+    <depends>com.explyt.test</depends>
+
+    <extensions defaultExtensionNs="com.agentlens.benchmark">
+        <serializationService
+                implementation ="com.agentlens.benchmark.runner.agent.ExplytAgentSerializationService"/>
+    </extensions>
+</idea-plugin>

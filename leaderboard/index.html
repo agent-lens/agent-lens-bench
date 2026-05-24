@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent Lens</title>
+    <meta
+      name="description"
+      content="Agent Lens is a lightweight leaderboard for comparing LLM agents and models."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Benchmarking Autonomous Systems</p>
+          <h1>Agent Lens</h1>
+          <p class="hero-text">
+            Placeholder overview: Agent Lens evaluates how well language-model
+            agents solve realistic multi-step tasks involving planning, tool use,
+            persistence, and correct execution.
+          </p>
+          <div class="hero-actions">
+            <a
+              class="hero-link primary-link"
+              href="https://github.com/your-org/agent-lens"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span class="link-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path
+                    d="M12 1.5a10.5 10.5 0 0 0-3.32 20.46c.53.1.72-.23.72-.51v-1.81c-2.94.64-3.56-1.25-3.56-1.25-.48-1.23-1.18-1.56-1.18-1.56-.96-.66.07-.65.07-.65 1.06.08 1.62 1.09 1.62 1.09.95 1.62 2.48 1.15 3.08.88.1-.69.37-1.15.67-1.42-2.35-.27-4.82-1.18-4.82-5.24 0-1.16.41-2.11 1.09-2.85-.11-.27-.47-1.35.1-2.82 0 0 .89-.29 2.91 1.09a10.1 10.1 0 0 1 5.3 0c2.02-1.38 2.91-1.09 2.91-1.09.57 1.47.21 2.55.1 2.82.68.74 1.09 1.69 1.09 2.85 0 4.07-2.47 4.96-4.83 5.22.38.33.72.97.72 1.95v2.89c0 .28.19.62.73.51A10.5 10.5 0 0 0 12 1.5Z"
+                  />
+                </svg>
+              </span>
+              Code
+            </a>
+            <a
+              class="hero-link"
+              href="https://arxiv.org/abs/XXXX.XXXXX"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span class="link-icon" aria-hidden="true">
+                <img
+                  src="https://info.arxiv.org/brand/images/brand-logomark-primary-large.jpg"
+                  alt=""
+                />
+              </span>
+              Paper
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section class="section leaderboard-section">
+          <div class="leaderboard-topbar">
+            <div>
+              <p class="section-label">Leaderboard</p>
+              <h2>Latest results</h2>
+            </div>
+            <div class="status-row">
+              <span class="status-pill" id="row-count">Loading...</span>
+              <span class="status-pill">Sort by clicking any column</span>
+            </div>
+          </div>
+
+          <div class="search-row">
+            <label class="search-field" for="leaderboard-search">
+              <span>Search models or notes</span>
+              <input
+                id="leaderboard-search"
+                type="search"
+                placeholder="Search agent, score, notes..."
+                autocomplete="off"
+              />
+            </label>
+          </div>
+
+          <div class="table-frame">
+            <div id="leaderboard-status" class="table-status">
+              Loading leaderboard...
+            </div>
+            <div id="leaderboard-table" class="table-wrap" hidden></div>
+          </div>
+        </section>
+
+        <section class="section description-section">
+          <div>
+            <p class="section-label">Description</p>
+            <h2>What Agent Lens is designed to evaluate</h2>
+          </div>
+          <div class="description-copy">
+            <p>
+              Placeholder description: Agent Lens evaluates language-model agents
+              on realistic tasks that require planning, tool use, persistence,
+              and correct execution under constraints. The benchmark is intended
+              to surface differences between systems that may look similar on
+              simpler chat-style evaluations.
+            </p>
+            <p>
+              Placeholder description: each submission is summarized by an
+              aggregate score together with additional metrics such as success
+              rate and efficiency. Over time, this page can expand with more
+              detailed breakdowns, task categories, and links to run artifacts.
+            </p>
+          </div>
+        </section>
+
+        <section class="section methodology-section">
+          <div>
+            <p class="section-label">Methodology</p>
+            <h2>How to read this leaderboard</h2>
+          </div>
+          <div class="methodology-grid">
+            <div class="method-card">
+              <span>Tasks</span>
+              <p>
+                Placeholder description for the benchmark task set, such as
+                coding, browsing, tool use, or multi-step execution.
+              </p>
+            </div>
+            <div class="method-card">
+              <span>Scoring</span>
+              <p>
+                Placeholder description for how aggregate score and success rate
+                are computed from underlying task outcomes.
+              </p>
+            </div>
+            <div class="method-card">
+              <span>Submission Policy</span>
+              <p>
+                Placeholder guidance for how models or agents are evaluated and
+                what evidence is required for leaderboard inclusion.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+The agent must add documentation to the project. Specifically, the agent is required to produce a high-level diagram. Detailed instructions for the agent on how to create documentation are described in the first user message.
+In response to the agent's questions about the scope of the documentation, tell it to gather everything from the repository.
+Always answer briefly.
+End the chat as soon as the agent completes the last step of your instruction and the agent says it is done. Do not give the agent any additional tasks.
+Your goal is to ensure the agent correctly follows the instruction and writes adequate documentation, so if it deviates from the instruction, correct its behavior.

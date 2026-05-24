@@ -1,0 +1,6 @@
+The agent must update the code due to changes in a third-party service API. Detailed instructions for the agent on how to perform the changes are described in the first user message.
+When the agent asks for the task description, reply: `The Cluster API service has changed the entry point for retrieving the list of connectors`.
+https://github.com/agent-lens/dataset/issues/6
+Answer all subsequent questions briefly and agree with everything. If the agent asks for more information, say there is no more.
+End the chat as soon as the agent completes the last step of your instruction and the agent says it is done.
+Your goal is to ensure the agent correctly follows the instruction and updates the code according to the external API change, so if it deviates from the instruction, correct its behavior.

@@ -1,0 +1,50 @@
+name: Publish package to GitHub Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+        type: string
+
+permissions: write-all
+
+env:
+  RELEASE_VERSION: ${{ inputs.version }}
+
+jobs:
+  publish:
+    runs-on: [ self-hosted, ex44 ]
+    container: ubuntu:20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: corretto
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v2
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Generate version
+        run: |
+          echo "BENCHMARK_VERSION="${RELEASE_VERSION}"" >> $GITHUB_ENV
+
+      - name: Publish package
+        run: ./idea-plugin/gradlew -p ./idea-plugin publishAllPublicationsToGitHubPackagesRepository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}

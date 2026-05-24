@@ -1,0 +1,35 @@
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+
+    <depends>org.jetbrains.kotlin</depends>
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <supportsKotlinPluginMode supportsK2="true" />
+    </extensions>
+
+    <depends>com.intellij.java</depends>
+
+    <depends>org.jetbrains.idea.maven</depends>
+    <depends>com.intellij.gradle</depends>
+
+    <actions>
+        <action id="com.agentlens.benchmark.actions.RunAgentBenchmarkAction"
+                class="com.agentlens.benchmark.actions.RunAgentBenchmarkAction"
+                text="Run Agent Benchmark"
+                description="Run agent simulation for selected scenarios">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
+        </action>
+    </actions>
+
+    <applicationListeners>
+        <listener class="com.agentlens.benchmark.runner.agent.JavaAgentBenchHeadlessStartupActivity"
+                  topic="com.intellij.ide.AppLifecycleListener"/>
+    </applicationListeners>
+
+    <extensions defaultExtensionNs="com.agentlens.benchmark">
+        <common.ideBuildSystem implementation="com.agentlens.benchmark.utils.buildSystem.IdeaBuildSystem"/>
+        <serializationService
+                implementation ="com.agentlens.benchmark.runner.agent.IdeaSpecificBenchmarkSerializationService"/>
+    </extensions>
+
+</idea-plugin>

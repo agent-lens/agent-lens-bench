@@ -1,0 +1,21 @@
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+    <extensionPoints>
+        <extensionPoint
+                qualifiedName="com.agentlens.benchmark.serializationService"
+                interface="com.agentlens.benchmark.common.runner.agent.BenchmarkSerializationService"
+        />
+        <extensionPoint
+                qualifiedName="com.agentlens.benchmark.common.fileProblemsProvider"
+                interface="com.agentlens.benchmark.common.utils.staticAnalysis.FileProblemsProvider"/>
+        <extensionPoint
+                qualifiedName="com.agentlens.benchmark.common.ideBuildSystem"
+                interface="com.agentlens.benchmark.common.utils.buildSystem.IdeBuildSystem"/>
+    </extensionPoints>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Benchmark notifications" displayType="STICKY_BALLOON" bundle="messages.BenchmarkTexts"
+                           key="notification.group.benchmark.notifications"/>
+    </extensions>
+</idea-plugin>

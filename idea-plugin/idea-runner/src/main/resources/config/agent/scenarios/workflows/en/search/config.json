@@ -1,0 +1,33 @@
+{
+  "verifiers": [
+    {
+      "type": "RunBuildSystemTaskVerifier",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "compile"],
+      "reg_exp_pattern": "\\[INFO\\] BUILD SUCCESS"
+    },
+    {
+      "type": "ChatRegExpCountVerifier",
+      "reg_exp_pattern": "TopicContentsService",
+      "strict_count": false
+    },
+    {
+      "type": "ChatRegExpCountVerifier",
+      "reg_exp_pattern": "ApacheKafkaAclService",
+      "strict_count": false
+    }
+  ],
+  "project_path": "klaw",
+  "opened_files": [],
+  "tags": ["workflows", "all"],
+  "language": "English",
+  "fixed_fst_user_message": true,
+  "max_steps": 15,
+  "preprocessors": [
+    {
+      "type": "RunBuildSystemTaskPreprocessor",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "install", "-fpom.xml"]
+    }
+  ]
+}

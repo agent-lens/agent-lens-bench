@@ -1,0 +1,85 @@
+{
+  "verifiers": [
+    {
+      "type": "RunBuildSystemTaskVerifier",
+      "build_system_name": "maven",
+      "path": ".",
+      "tasks": [
+        "-pl",
+        "apollo-biz",
+        "-am",
+        "-Dtest=InstanceServiceTest,InstanceConfigRepositoryTest",
+        "-Dsurefire.failIfNoSpecifiedTests=false",
+        "test"
+      ],
+      "reg_exp_pattern": "\\[INFO\\] BUILD SUCCESS"
+    },
+    {
+      "type": "YesChangesVerifier",
+      "target_files": [
+        "apollo-biz/src/main/java/com/ctrip/framework/apollo/biz/repository/InstanceConfigRepository.java",
+        "apollo-biz/src/main/java/com/ctrip/framework/apollo/biz/service/InstanceService.java"
+      ]
+    },
+    {
+      "type": "JavaFileRegExpCountVerifier",
+      "search_in": "apollo-biz/src/main/java/com/ctrip/framework/apollo/biz/repository/InstanceConfigRepository.java",
+      "reg_exp_pattern": "nativeQuery\\s*=\\s*true",
+      "strict_count": true,
+      "num_expected": 0,
+      "uncommented_only": true
+    },
+    {
+      "type": "JavaFileRegExpCountVerifier",
+      "search_in": "apollo-biz/src/main/java/com/ctrip/framework/apollo/biz/repository/InstanceConfigRepository.java",
+      "reg_exp_pattern": "a\\.`InstanceId`|a\\.`ConfigAppId`|a\\.`ConfigClusterName`|a\\.`ConfigNamespaceName`|a\\.`DataChange_LastTime`|b\\.`AppId`",
+      "strict_count": true,
+      "num_expected": 0,
+      "uncommented_only": true
+    },
+    {
+      "type": "JavaFileRegExpCountVerifier",
+      "search_in": "apollo-biz/src/main/java/com/ctrip/framework/apollo/biz/repository/InstanceConfigRepository.java",
+      "reg_exp_pattern": "select b\\.Id from InstanceConfig a inner join Instance b",
+      "strict_count": true,
+      "num_expected": 0,
+      "uncommented_only": true
+    },
+    {
+      "type": "JavaFileRegExpCountVerifier",
+      "search_in": "apollo-biz/src/main/java/com/ctrip/framework/apollo/biz/service/InstanceService.java",
+      "reg_exp_pattern": "import java\\.math\\.BigInteger;",
+      "strict_count": true,
+      "num_expected": 0,
+      "uncommented_only": true
+    },
+    {
+      "type": "JavaFileRegExpCountVerifier",
+      "search_in": "apollo-biz/src/main/java/com/ctrip/framework/apollo/biz/service/InstanceService.java",
+      "reg_exp_pattern": "for h2 test",
+      "strict_count": true,
+      "num_expected": 0,
+      "uncommented_only": true
+    },
+    {
+      "type": "NoChangesVerifier",
+      "allowed_globs": [
+        "apollo-biz/src/main/java/**/*.java"
+      ],
+      "forbidden_globs": [
+        "apollo-biz/src/test/**",
+        "scripts/sql/**"
+      ]
+    }
+  ],
+  "opened_files": [],
+  "project_path": "apollo",
+  "tags": ["workflows", "online", "all"],
+  "preprocessors": [
+    {
+      "type": "RunBuildSystemTaskPreprocessor",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "install", "-fpom.xml"]
+    }
+  ]
+}

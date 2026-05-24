@@ -1,0 +1,43 @@
+{
+  "verifiers": [
+    {
+      "type": "RunBuildSystemTaskVerifier",
+      "build_system_name": "maven",
+      "tasks": ["-DskipTests=true", "compile"],
+      "reg_exp_pattern": "\\[INFO\\] BUILD SUCCESS"
+    },
+    {
+      "type": "JavaRunTestsVerifier",
+      "build_system_name": "maven",
+      "command": ["mvn", "-pl", "core", "-am", "test"],
+      "test_pattern": "UsersTeamsControllerIT"
+    },
+    {
+      "type": "JavaRunTestsVerifier",
+      "build_system_name": "maven",
+      "command": ["mvn", "-pl", "core", "-am", "test"],
+      "test_pattern": "EnvsClustersTenantsControllerIT"
+    },
+    {
+      "type": "JavaRunTestsVerifier",
+      "build_system_name": "maven",
+      "command": ["mvn", "-pl", "core", "-am", "test"],
+      "test_pattern": "TopicAclControllerIT"
+    }
+  ],
+  "project_path": "klaw",
+  "opened_files": [],
+  "language": "English",
+  "fixed_fst_user_message": true,
+  "tags": ["workflows", "all"],
+  "mcp_servers": [
+    {
+        "name": "github",
+        "url": "https://api.githubcopilot.com/mcp",
+        "headers": {
+          "Authorization": "Bearer $GITHUB_TOKEN$"
+        },
+        "type": "http"
+    }
+  ]
+}
