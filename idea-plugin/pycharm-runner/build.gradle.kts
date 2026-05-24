@@ -7,7 +7,7 @@ plugins {
 dependencies {
     implementation(project(":benchmark-common"))
     implementation(project(":benchmark-pycharm-specific"))
-    implementation(project(":explyt-agent-engine"))
+    implementation(project(":x-agent-engine"))
 
     intellijPlatform {
         bundledPlugins("Git4Idea", "org.jetbrains.plugins.terminal")
@@ -15,7 +15,7 @@ dependencies {
             listOf("PythonCore:${Versions.TargetVersion.pythonCoreVersion}")
         })
 
-        plugin("com.explyt.test", Versions.explytPluginVersion)
+        plugin("com.x.plugin", Versions.xPluginVersion)
     }
 
 }

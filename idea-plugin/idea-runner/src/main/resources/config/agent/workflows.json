@@ -4,7 +4,7 @@
   "default_repo_hash": "d93085b3ca4cf6751bd7eff3a4ef3c0665b1379a",
   "repo_url": "https://github.com/agent-lens/dataset/",
   "agent_engine": {
-    "type": "ExplytCommonAgentEngine"
+    "type": "XCommonAgentEngine"
   },
   "scenario_paths": [
     "config/agent/scenarios/workflows/en/add_logging",

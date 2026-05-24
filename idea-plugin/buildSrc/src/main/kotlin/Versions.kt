@@ -5,7 +5,7 @@ object Versions {
 
     const val springAiVersion = "1.1.0-M4"
 
-    const val explytPluginVersion = "5.10.1-IJ-261-mp"
+    const val xPluginVersion = "xxxx"
 
     object  TargetVersion {
         const val ideaIdeType = "IU"

@@ -9,6 +9,6 @@ dependencies {
 
     intellijPlatform {
         bundledPlugins("org.jetbrains.plugins.terminal", "Git4Idea")
-        plugin("com.explyt.test", Versions.explytPluginVersion)
+        plugin("com.x.plugin", Versions.xPluginVersion)
     }
 }

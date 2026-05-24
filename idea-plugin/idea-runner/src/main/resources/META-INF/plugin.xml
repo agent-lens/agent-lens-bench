@@ -7,6 +7,6 @@
 
     <xi:include href="benchmark-common-plugin.xml" xpointer="xpointer(/idea-plugin/*)"/>
     <xi:include href="benchmark-idea-specific-plugin.xml" xpointer="xpointer(/idea-plugin/*)"/>
-    <xi:include href="explyt-agent-engine-plugin.xml" xpointer="xpointer(/idea-plugin/*)"/>
+    <xi:include href="x-agent-engine-plugin.xml" xpointer="xpointer(/idea-plugin/*)"/>
 
 </idea-plugin>

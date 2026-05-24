@@ -1,14 +1,14 @@
 package com.agentlens.benchmark.runner.agent.engine
 
-import com.explyt.benchmark.api.v1.chat.AgentType
-import com.explyt.benchmark.api.v1.chat.ChatSession
-import com.explyt.benchmark.api.v1.chat.ChatSessionFactory
+import com.x.benchmark.api.v1.chat.AgentType
+import com.x.benchmark.api.v1.chat.ChatSession
+import com.x.benchmark.api.v1.chat.ChatSessionFactory
 import com.agentlens.benchmark.common.schema.Message
-import com.explyt.benchmark.api.v1.llm.LlmConfigurationService
-import com.explyt.benchmark.api.v1.llm.LlmProviderConfig
-import com.explyt.benchmark.api.v1.llm.ProviderName
-import com.explyt.benchmark.api.v1.mcp.HttpMcpServerConfig
-import com.explyt.benchmark.api.v1.mcp.McpManagementService
+import com.x.benchmark.api.v1.llm.LlmConfigurationService
+import com.x.benchmark.api.v1.llm.LlmProviderConfig
+import com.x.benchmark.api.v1.llm.ProviderName
+import com.x.benchmark.api.v1.mcp.HttpMcpServerConfig
+import com.x.benchmark.api.v1.mcp.McpManagementService
 import com.agentlens.benchmark.common.dialogs.ModelSettings
 import com.agentlens.benchmark.common.runner.agent.AgentEnvService
 import com.agentlens.benchmark.common.runner.agent.AgentTurnUsageInfo
@@ -30,10 +30,10 @@ import kotlin.collections.component2
 
 @Serializable
 @Suppress("PROVIDED_RUNTIME_TOO_LOW")
-abstract class ExplytAgentEngine: AgentEngine {
+abstract class XAgentEngine: AgentEngine {
     abstract val agentType: AgentType
 
-    override fun getAgentName(): String = "Explyt"
+    override fun getAgentName(): String = "X"
 
     @Transient
     private lateinit var benchmarkListener: BenchmarkChatSessionListener
@@ -84,9 +84,9 @@ abstract class ExplytAgentEngine: AgentEngine {
 
     private fun initScenarioPromptLanguage(language: ScenarioLanguage) {
         val pluginLang = when (language) {
-            ScenarioLanguage.English -> com.explyt.benchmark.api.v1.llm.PromptLanguage.English
-            ScenarioLanguage.Russian -> com.explyt.benchmark.api.v1.llm.PromptLanguage.Russian
-            ScenarioLanguage.Chinese -> com.explyt.benchmark.api.v1.llm.PromptLanguage.Chinese
+            ScenarioLanguage.English -> com.x.benchmark.api.v1.llm.PromptLanguage.English
+            ScenarioLanguage.Russian -> com.x.benchmark.api.v1.llm.PromptLanguage.Russian
+            ScenarioLanguage.Chinese -> com.x.benchmark.api.v1.llm.PromptLanguage.Chinese
         }
         LlmConfigurationService.getInstance().setPromptLanguage(pluginLang)
     }
@@ -137,8 +137,8 @@ abstract class ExplytAgentEngine: AgentEngine {
 }
 
 @Serializable
-@SerialName("ExplytCommonAgentEngine")
+@SerialName("XCommonAgentEngine")
 @Suppress("PROVIDED_RUNTIME_TOO_LOW")
-class ExplytDefaultAgentEngine : ExplytAgentEngine() {
+class XDefaultAgentEngine : XAgentEngine() {
     override val agentType: AgentType = AgentType.Default
 }
