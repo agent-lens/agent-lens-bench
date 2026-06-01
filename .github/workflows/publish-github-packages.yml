@@ -21,8 +21,7 @@ env:
 
 jobs:
   publish:
-    runs-on: [ self-hosted, ex44 ]
-    container: ubuntu:20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -34,7 +33,7 @@ jobs:
           distribution: corretto
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v2
+        uses: gradle/actions/wrapper-validation@v4
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
