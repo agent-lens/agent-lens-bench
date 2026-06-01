@@ -108,7 +108,7 @@ jobs:
         with:
           repository: ${{ matrix.repository }}
           ref: main
-          token: ${{ env.GITHUB_TOKEN }}
+          token: ${{ secrets.DATASET_PAT_TOKEN }}
           path: dataset
           fetch-depth: 0
 
