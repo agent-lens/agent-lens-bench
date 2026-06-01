@@ -306,6 +306,19 @@ th:last-child {
   font-family: "IBM Plex Mono", monospace;
 }
 
+.leaderboard-caption {
+  margin-top: 16px;
+  max-width: 72rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.leaderboard-caption strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
 .methodology-grid {
   display: grid;
   gap: 18px;
@@ -313,7 +326,7 @@ th:last-child {
 
 .methodology-grid {
   margin-top: 18px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 .description-copy {
