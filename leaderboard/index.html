@@ -70,19 +70,14 @@
               <p class="section-label">Leaderboard</p>
               <h2>Java coding-agent results</h2>
             </div>
-            <div class="status-row">
-              <span class="status-pill" id="row-count">Loading...</span>
-              <span class="status-pill">Sort by clicking any column</span>
-            </div>
           </div>
 
           <div class="search-row">
             <label class="search-field" for="leaderboard-search">
-              <span>Search harnesses, models, or notes</span>
               <input
                 id="leaderboard-search"
                 type="search"
-                placeholder="Search model, harness, metric, notes..."
+                placeholder="Search model, harness, metric value..."
                 autocomplete="off"
               />
             </label>
@@ -94,6 +89,17 @@
             </div>
             <div id="leaderboard-table" class="table-wrap" hidden></div>
           </div>
+
+          <p class="leaderboard-caption">
+            All runs use GPT-5.4 as the LLM judge. Evaluated agents run
+            with high reasoning effort where supported, except where noted.
+            OpenAI and Anthropic models use their official providers, GLM-5.1
+            (self-hosted) is hosted locally, and the remaining models use
+            OpenRouter.
+            <br />
+            <strong>*</strong> marks runs with provider-side instability;
+            results are included for completeness.
+          </p>
         </section>
 
         <section class="section description-section">
@@ -108,13 +114,6 @@
               complete interaction, including instruction following, tool-use
               discipline, verification behavior, error recovery, and the quality
               of user-facing communication.
-            </p>
-            <p>
-              The Quality Index is a deliberately simple aggregate of component
-              metrics: formal verification, end-result quality, instruction
-              compliance, pitfalls, pleasantness, and tool calls. Reporting the
-              components alongside the aggregate keeps the leaderboard diagnostic
-              rather than opaque.
             </p>
           </div>
         </section>
@@ -131,24 +130,21 @@
                 The current benchmark contains 16 coding-agent scenarios, each
                 run with two user personas for 32 trajectories per evaluated
                 agent. Scenarios cover realistic multi-step Java workflows and
-                are designed to be extensible with additional task families.
+              are designed to be extensible with additional task families.
               </p>
             </div>
             <div class="method-card">
               <span>Scoring</span>
               <p>
+                <strong>Score</strong> is the Quality Index (QI) - an unweighted
+                average of all the other metics. <strong>Formal</strong> is the
+                formal-verification pass rate. <strong>End result</strong>,
+                <strong>Instruction compliance</strong>, <strong>Pitfalls</strong>,
+                <strong>Pleasantness</strong>, and <strong>Tool calls</strong>
+                are LLM-judge metric means.
                 Formal checks capture objective task evidence where possible.
                 LLM judges then review complete trajectories for End Result,
                 Instruction Compliance, Pitfalls, Pleasantness, and Tool Calls.
-              </p>
-            </div>
-            <div class="method-card">
-              <span>Interpretation</span>
-              <p>
-                Rows are full-system results: model, provider, harness, tool
-                interface, and execution policy all matter. Asterisks mark runs
-                with provider-side instability; those results are retained for
-                transparency rather than omitted.
               </p>
             </div>
           </div>

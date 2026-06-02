@@ -72,18 +72,24 @@ function parseCsv(text) {
   return { headers, rows };
 }
 
-function isNumericValue(value) {
+function normalizeNumeric(value) {
   if (typeof value !== "string") {
-    return false;
+    return "";
   }
 
-  const normalized = value.replace(/[%$,]/g, "").trim();
+  // Drop an uncertainty suffix
+  const mainValue = value.split("±")[0];
+  return mainValue.replace(/[%$,]/g, "").trim();
+}
+
+function isNumericValue(value) {
+  const normalized = normalizeNumeric(value);
   return normalized !== "" && !Number.isNaN(Number(normalized));
 }
 
 function toComparableValue(value) {
   if (isNumericValue(value)) {
-    return Number(value.replace(/[%$,]/g, "").trim());
+    return Number(normalizeNumeric(value));
   }
 
   return String(value).toLowerCase();
@@ -110,6 +116,22 @@ function sortRows(rows, column, direction) {
 
 function prettifyHeader(header) {
   return header.replace(/_/g, " ");
+}
+
+// Render multi-word headers across multiple lines
+function renderHeaderLabel(th, header, arrow) {
+  const words = prettifyHeader(header).split(" ");
+
+  words.forEach((word, index) => {
+    if (index > 0) {
+      th.appendChild(document.createElement("br"));
+    }
+    th.appendChild(document.createTextNode(word));
+  });
+
+  if (arrow) {
+    th.appendChild(document.createTextNode(arrow));
+  }
 }
 
 function filterRows(rows, query) {
@@ -140,7 +162,7 @@ function renderTable() {
     const isActive = sortColumn === header;
     const arrow = isActive ? (sortDirection === "asc" ? " ↑" : " ↓") : "";
 
-    th.textContent = `${prettifyHeader(header)}${arrow}`;
+    renderHeaderLabel(th, header, arrow);
     th.scope = "col";
     th.classList.toggle("sort-active", isActive);
     th.addEventListener("click", () => {
