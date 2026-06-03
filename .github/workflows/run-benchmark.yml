@@ -54,7 +54,7 @@ on:
         default: false
 
 env:
-  CLAUDE_CODE_VERSION: 2.1.72
+  CLAUDE_CODE_VERSION: 2.1.141
 
 jobs:
   run-bench-fold:
@@ -62,8 +62,8 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/agent-lens/benchmark:v1.1.2
     env:
-      SIMULATOR_MODEL_NAME: ${{ vars.SIMULATOR_MODEL_NAME }}
-      SIMULATOR_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
+      SIMULATOR_MODEL_NAME: ${{ secrets.SIMULATOR_MODEL_NAME }}
+      SIMULATOR_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
       SIMULATOR_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       AGENT_API_KEY: ${{ inputs.agent_api_key }}
       USE_ALL_USERS: ${{ inputs.use_all_users }}
