@@ -60,7 +60,7 @@ jobs:
   run-bench-fold:
     name: Run benchmark on data folds
     runs-on: ubuntu-latest
-    container: ghcr.io/agent-lens/benchmark:v1.0.0
+    container: ghcr.io/agent-lens/benchmark:v1.1.2
     env:
       SIMULATOR_MODEL_NAME: ${{ vars.SIMULATOR_MODEL_NAME }}
       SIMULATOR_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
