@@ -373,6 +373,7 @@ jobs:
             --disable_tracking true
         env:
           LLM_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}/v1
 
       - name: Upload eval result folder
         if: always()
