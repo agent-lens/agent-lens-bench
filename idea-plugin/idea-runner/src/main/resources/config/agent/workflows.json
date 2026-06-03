@@ -1,7 +1,7 @@
 {
   "budget_dollars_limit": 5.0,
   "default_branch": "main",
-  "default_repo_hash": "d93085b3ca4cf6751bd7eff3a4ef3c0665b1379a",
+  "default_repo_hash": "2f9537c369ec84326c0aef337ac0948fa0657d55",
   "repo_url": "https://github.com/agent-lens/dataset/",
   "agent_engine": {
     "type": "ExplytCommonAgentEngine"
