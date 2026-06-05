@@ -1,6 +1,6 @@
 The agent must generate unit tests for a class. Detailed instructions for the agent on how to add unit tests are described in the first user message.
 In response to the agent's question about which class to generate tests for, reply RolesPermissionsControllerService.
-https://github.com/agent-lens/dataset/issues/5
+If the agent asks for additional information, send them the ticket https://github.com/agent-lens/dataset/issues/5.
 Answer all questions briefly and agree with everything.
 End the chat as soon as the agent completes the last step of your instruction and the agent says it is done.
 Your goal is to ensure the agent correctly follows the instruction and creates a working test class, so if it deviates from the instruction, correct its behavior.
