@@ -202,31 +202,36 @@ class SimulatedUser private constructor(
         val prompt = SpringPrompt(springMessages)
         logger.debug { "Sending user message to ${modelName}: $prompt" }
 
-        val springResponse: SpringChatResponse = withContext(Dispatchers.IO) {
-            chatModel.call(prompt)
+        val springResponses: List<SpringChatResponse> = withContext(Dispatchers.IO) {
+            chatModel.stream(prompt).collectList().block().orEmpty()
         }
 
-        return springResponse.toSimulatedUserResponse()
+        return springResponses.toSimulatedUserResponse()
     }
 
-    private fun SpringChatResponse.toSimulatedUserResponse(): SimulatedUserResponse {
-        val generation = result ?: error("Null user result from Spring-ai")
-        val aiMessage = generation.output
+    private fun List<SpringChatResponse>.toSimulatedUserResponse(): SimulatedUserResponse {
+        val responseText = StringBuilder()
+        val toolCalls = mutableListOf<ToolCall>()
+        var usage: org.springframework.ai.chat.metadata.Usage? = null
 
-        val toolCalls = aiMessage.toolCalls.map { req ->
-            ToolCall(
-                id = req.id() ?: "",
-                name = req.name(),
-                arguments = req.arguments(),
-            )
+        for (chatResponse in this) {
+            val aiMessage = chatResponse.result.output
+            aiMessage.text?.let(responseText::append)
+            aiMessage.toolCalls.forEach { req ->
+                toolCalls += ToolCall(
+                    id = req.id() ?: "",
+                    name = req.name(),
+                    arguments = req.arguments(),
+                )
+            }
+            chatResponse.metadata.usage?.takeIf { (it.totalTokens ?: 0) > 0 }?.let { usage = it }
         }
 
-        val springUsage = metadata.usage
-        val promptTokens = springUsage?.promptTokens?.toLong() ?: 0L
-        val completionTokens = springUsage?.completionTokens?.toLong() ?: 0L
+        val promptTokens = usage?.promptTokens?.toLong() ?: 0L
+        val completionTokens = usage?.completionTokens?.toLong() ?: 0L
 
         // Extract cache hit tokens from native OpenAI usage object
-        val cachedTokens = extractCachedTokens(springUsage)
+        val cachedTokens = extractCachedTokens(usage)
 
         val price = PriceCalculator.calculatePrice(
             modelName = modelName,
@@ -236,7 +241,7 @@ class SimulatedUser private constructor(
         )
 
         return SimulatedUserResponse(
-            response = aiMessage.text.orEmpty(),
+            response = responseText.toString(),
             toolCalls = toolCalls,
             usage = LlmUsage(
                 price = price,
@@ -487,6 +492,7 @@ class SimulatedUser private constructor(
                 .model(simulatorModelName)
                 .tools(listOf(terminationTool))
                 .internalToolExecutionEnabled(false)
+                .streamUsage(true) // include token usage in the final streamed chunk
                 .build()
 
             val chatModel = OpenAiChatModel.builder()

@@ -1,6 +1,7 @@
 import os
 import threading
 import uuid
+from types import SimpleNamespace
 from typing import Any, Dict, Final
 
 from openai import OpenAI
@@ -13,6 +14,9 @@ from agent_lens.eval.metrics.llm_judge.providers.registry import (
 ENV_OPENAI_BASE_URL: Final[str] = "OPENAI_BASE_URL"
 X_DEVICE_ID_HEADER: Final[str] = "X-Device-ID"
 _thread_local = threading.local()
+_ZERO_USAGE = SimpleNamespace(
+    prompt_tokens=0, completion_tokens=0, prompt_tokens_details=None
+)
 
 
 def _get_thread_device_id() -> str:
@@ -46,6 +50,41 @@ def _user_request_kwargs(config_dict: Dict, provider: str) -> Dict[str, Any]:
     section_key = "openai" if provider == PROVIDER_OPENAI else "openai_compatible"
     section = config_dict.get(section_key) or {}
     return dict(section.get("request_kwargs") or {})
+
+
+def _aggregate_stream(stream: Any, config_dict: Dict, provider: str) -> Any:
+    """Collapse a streamed chat.completions response into a response-shaped object.
+
+    Returns an object exposing `.choices[0].message.content` and `.usage`, so
+    downstream content/usage extraction stays identical to the non-streaming path.
+    Content is left as ``None`` when no content delta arrives, preserving the
+    caller's retry-on-missing-content behaviour.
+    """
+    content_parts = []
+    received_content = False
+    usage = None
+    for chunk in stream:
+        if chunk.usage is not None:
+            usage = chunk.usage
+        for choice in chunk.choices:
+            delta = getattr(choice, "delta", None)
+            piece = getattr(delta, "content", None) if delta is not None else None
+            if piece is not None:
+                received_content = True
+                content_parts.append(piece)
+
+    content = "".join(content_parts) if received_content else None
+
+    # Strip reasoning preamble for backends that emit it (e.g. `<think>...</think>`
+    # from DeepSeek-R1 / Qwen-QwQ via OpenAI-compatible transport).
+    if provider == PROVIDER_OPENAI_COMPATIBLE and content:
+        separator = str(config_dict.get("judge_model_reasoning_separator") or "")
+        if separator and separator in content:
+            content = content.split(separator)[-1]
+
+    message = SimpleNamespace(content=content)
+    choice = SimpleNamespace(message=message)
+    return SimpleNamespace(choices=[choice], usage=usage or _ZERO_USAGE)
 
 
 def get_openai_compatible_response(
@@ -112,15 +151,10 @@ def get_openai_compatible_response(
 
     request_kwargs.update(_user_request_kwargs(config_dict, provider))
 
-    response = client.chat.completions.create(**request_kwargs)
+    # Force streaming last so it can't be disabled by user request_kwargs;
+    # `include_usage` makes the final chunk carry token accounting.
+    request_kwargs["stream"] = True
+    request_kwargs["stream_options"] = {"include_usage": True}
 
-    # Strip reasoning preamble for backends that emit it (e.g. `<think>...</think>`
-    # from DeepSeek-R1 / Qwen-QwQ via OpenAI-compatible transport).
-    if provider == PROVIDER_OPENAI_COMPATIBLE:
-        separator = str(config_dict.get("judge_model_reasoning_separator") or "")
-        if separator:
-            content = response.choices[0].message.content
-            if content and separator in content:
-                response.choices[0].message.content = content.split(separator)[-1]
-
-    return response
+    stream = client.chat.completions.create(**request_kwargs)
+    return _aggregate_stream(stream, config_dict, provider)

@@ -9,7 +9,7 @@ def get_anthropic_response(
 ) -> Any:
     client = anthropic.Anthropic(api_key=api_key)
 
-    response = client.messages.create(
+    with client.messages.stream(
         model=config_dict["judge_model"],
         messages=[{"role": "user", "content": user_prompt}],
         max_tokens=config_dict["max_completion_tokens"],
@@ -17,5 +17,5 @@ def get_anthropic_response(
         system=system_prompt,
         thinking={"type": "adaptive"},
         extra_body={"output_config": {"effort": config_dict["reasoning_effort"]}},
-    )
-    return response
+    ) as stream:
+        return stream.get_final_message()
