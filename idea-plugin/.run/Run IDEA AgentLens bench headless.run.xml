@@ -8,6 +8,8 @@
           <entry key="MODEL_URL" value="TODO" />
           <entry key="PROVIDER_NAME" value="OpenAI-compatible" />
           <entry key="AGENT_API_KEY" value="TODO" />
+          <entry key="SIMULATOR_MODEL_NAME" value="gpt-5.5" />
+          <entry key="SIMULATOR_BASE_URL" value="https://api.openai.com" />
           <entry key="SIMULATOR_API_KEY" value="TODO" />
           <entry key="GITHUB_TOKEN" value="TODO" />
           <entry key="CLEAR_FOLDER" value="true" />
