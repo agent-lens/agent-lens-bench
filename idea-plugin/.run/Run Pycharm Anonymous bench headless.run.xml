@@ -14,6 +14,8 @@
           <entry key="PROJECTS_ROOT_DIR" value="$PROJECT_DIR$/dataset" />
           <entry key="PROVIDER_NAME" value="OpenAI-compatible" />
           <entry key="SIMULATOR_API_KEY" value="TODO" />
+          <entry key="SIMULATOR_BASE_URL" value="https://api.openai.com" />
+          <entry key="SIMULATOR_MODEL_NAME" value="gpt-5.5" />
           <entry key="USE_ALL_USERS" value="true" />
           <entry key="WHERE_TO_SAVE_DUMPS" value="$PROJECT_DIR$/bench_output" />
         </map>
