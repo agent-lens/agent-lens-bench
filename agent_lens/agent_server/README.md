@@ -11,15 +11,17 @@ For complete API reference, see `/docs` endpoint.
 
 ## How to start
 
+Run from the repository root:
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload
+pip install -e ".[server]"
+uvicorn agent_lens.agent_server.main:app --reload
 ```
 
 Server runs on `http://127.0.0.1:8000` by default.
 
 Optional request logging:
-- Default (no files saved): `uvicorn main:app --reload`
-- Save Claude request/response JSON files: `CLAUDE_DUMPS_DIR=logs/claude uvicorn main:app --reload`
+- Default (no files saved): `uvicorn agent_lens.agent_server.main:app --reload`
+- Save Claude request/response JSON files: `CLAUDE_DUMPS_DIR=logs/claude uvicorn agent_lens.agent_server.main:app --reload`

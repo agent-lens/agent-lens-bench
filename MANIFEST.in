@@ -1,0 +1,7 @@
+# setuptools-scm puts every git-tracked file into the sdist by default;
+# keep the sdist down to the Python package plus build/licensing metadata.
+prune idea-plugin
+prune leaderboard
+prune .github
+exclude .releaserc.json
+exclude .gitignore

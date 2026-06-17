@@ -55,3 +55,73 @@ jobs:
     with:
       version: ${{ needs.release.outputs.release_version }}
     secrets: inherit
+
+  publish-wheel:
+    name: 'Build & publish Python wheel'
+    needs: release
+    runs-on: ubuntu-latest
+    container: python:3.11-slim
+    env:
+      # `release_version` has the form `vX.Y.Z` (see .releaserc.json prepareCmd).
+      RELEASE_VERSION: ${{ needs.release.outputs.release_version }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: 'Install OS deps (git, curl, gh CLI)'
+        run: |
+          apt-get update
+          apt-get install -yqq --no-install-recommends \
+            ca-certificates \
+            curl \
+            git-core
+          # gh CLI is needed to upload assets to the release created by semantic-release
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+            -o /usr/share/keyrings/githubcli-archive-keyring.gpg
+          chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+            > /etc/apt/sources.list.d/github-cli.list
+          apt-get update
+          apt-get install -yqq --no-install-recommends gh
+
+      - name: 'Checkout repository at release tag'
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.RELEASE_VERSION }}
+          # Full history + tags so setuptools-scm can derive the package version from the tag.
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: 'Add git path to trusted'
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: 'Install build tooling'
+        run: pip install --no-cache-dir build
+
+      - name: 'Build sdist & wheel'
+        run: python -m build --sdist --wheel
+
+      - name: 'Smoke-test wheel (version & imports)'
+        run: |
+          pip install --no-cache-dir "$(ls dist/*.whl)[server]"
+          # Built version must match the release tag (guards against scm misconfiguration).
+          INSTALLED_VERSION="$(python -c 'from importlib.metadata import version; print(version("agent-lens-bench"))')"
+          echo "Installed version: ${INSTALLED_VERSION}, release tag: ${RELEASE_VERSION}"
+          test "v${INSTALLED_VERSION}" = "${RELEASE_VERSION}" || { echo 'Version mismatch'; exit 1; }
+          # Import every console-script module and the server app.
+          python - <<'EOF'
+          import importlib
+          modules = [
+              "agent_lens.eval.cli.run_agent_bench",
+              "agent_lens.eval.cli.merge_folds_and_publish",
+              "agent_lens.eval.cli.compare_2_runs",
+              "agent_lens.eval.cli.download_and_compare_2_runs",
+              "agent_lens.eval.cli.answer_based_on_data",
+              "agent_lens.agent_server.main",
+          ]
+          for module in modules:
+              importlib.import_module(module)
+              print("import OK:", module)
+          EOF
+
+      - name: 'Upload wheel & sdist to GitHub Release'
+        run: gh release upload "$RELEASE_VERSION" dist/*.whl dist/*.tar.gz --clobber
+

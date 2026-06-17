@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-lens-bench"
+# Version is derived from the `vX.Y.Z` git tag by setuptools-scm (see [tool.setuptools_scm]),
+# both for the CI wheel build and for `pip install git+...@vX.Y.Z` installs.
+dynamic = ["version"]
+description = "AgentLens benchmark: evaluation pipelines, CLIs and the agent server."
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+# Ranges (not pins) so the package can coexist in a consumer's venv;
+# lower bounds match the tested pins in agent_lens/eval/requirements.txt.
+dependencies = [
+    "json5>=0.9.25",
+    "jsonschema>=4.23,<5",
+    "jsonschema-specifications>=2023.7.1",
+    "numpy>=1.26,<3",
+    "scipy>=1.16,<2",
+    "openai>=1.69,<2",
+    "PyYAML>=6.0.2,<7",
+    "requests>=2.32,<3",
+    "tqdm>=4.67,<5",
+    "httpx>=0.28,<1",
+    "google-genai>=1.16,<2",
+    "anthropic>=0.52,<1",
+    "clearml>=2.0,<3",
+    "python-dateutil>=2.9,<3",
+]
+
+[project.optional-dependencies]
+# FastAPI agent server (`agent_lens.agent_server`): pip install "agent-lens-bench[server]"
+server = [
+    "fastapi>=0.129,<1",
+    "pydantic>=2.12,<3",
+    "uvicorn[standard]>=0.40,<1",
+]
+dev = [
+    "ruff>=0.12.9",
+]
+
+[project.scripts]
+agent-lens-run-bench = "agent_lens.eval.cli.run_agent_bench:main"
+agent-lens-merge-folds = "agent_lens.eval.cli.merge_folds_and_publish:main"
+agent-lens-compare-runs = "agent_lens.eval.cli.compare_2_runs:main"
+agent-lens-download-compare = "agent_lens.eval.cli.download_and_compare_2_runs:main"
+agent-lens-answer-from-data = "agent_lens.eval.cli.answer_based_on_data:main"
+
+[tool.setuptools_scm]
+# semantic-release creates tags as `vX.Y.Z`; setuptools-scm strips the leading `v` automatically.
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agent_lens*"]
+exclude = [
+    ".venv*",
+    "tests*",
+    "idea-plugin*",
+    "leaderboard*",
+    "bench_output*",
+]
+
+[tool.setuptools.package-data]
+"agent_lens" = [
+    "**/*.yaml",
+    "**/*.yml",
+    "**/*.json",
+    "**/*.md",
+    "**/*.txt",
+]
