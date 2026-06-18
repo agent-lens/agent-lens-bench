@@ -225,7 +225,9 @@ Main entry points:
 
 ## Contributing
 
-Adapt AgentLens to your own agent by wiring it in the same way as the bundled integrations — IDE-native like Explyt or CLI like Claude Code — and adjust the datasets and metrics to fit your setup. We welcome PRs for new agents, datasets, and metrics.
+Adapt AgentLens to your own agent by wiring it in the same way as the bundled integrations — IDE-native like Explyt or CLI like Claude Code — and adjust the datasets and metrics to fit your setup.
+We welcome PRs for new agents, datasets, and metrics, as well as bug reports and feature requests filed as GitHub issues.
+For questions or discussion, feel free to tag @sergeyrid, @le-oof, or @vlomshakov on the relevant issue or pull request.
 
 ### Agents
 
