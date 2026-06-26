@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![arXiv](https://img.shields.io/badge/arXiv-XXXX.XXXXX-yellow.svg)](https://arxiv.org/abs/XXXX.XXXXX)
 [![Leaderboard](https://img.shields.io/badge/website-leaderboard-lightgrey.svg)](https://todo.github.io/leaderboard/)
+[![Blog](https://img.shields.io/badge/website-blog-lightgrey.svg)](https://explyt.ai/en/blog/agent-lens-bench)
 
 AgentLens evaluates a coding agent the way its user experiences it — across the whole session, not just the final repository state or a pass/fail flag. We evaluate this way because binary success is too coarse for production assistants: a run can clear a narrow check and still be unreliable or unpleasant to work with, and a failing run can still do useful work along the way.
 
