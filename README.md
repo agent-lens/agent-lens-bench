@@ -1,17 +1,15 @@
 # AgentLens: Production-Assessed Trajectory Reviews for Coding Agent Evaluation
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
-[![arXiv](https://img.shields.io/badge/arXiv-XXXX.XXXXX-yellow.svg)](https://arxiv.org/abs/XXXX.XXXXX)
-[![Leaderboard](https://img.shields.io/badge/website-leaderboard-lightgrey.svg)](https://todo.github.io/leaderboard/)
-[![Blog post](https://img.shields.io/badge/website-blogpost-lightgrey.svg)](https://explyt.ai/en/blog/agent-lens-bench)
+[![arXiv](https://img.shields.io/badge/arXiv-2607.06624-yellow.svg)](https://arxiv.org/abs/2607.06624)
+[![Leaderboard](https://img.shields.io/badge/website-leaderboard-lightgrey.svg)](https://agent-lens.github.io/agent-lens-bench/)
+[![Blog post](https://img.shields.io/badge/website-blogpost-lightgrey.svg)](https://explyt.ai/en/blog/agent-lens-bench?utm_source=github&utm_medium=readme&utm_campaign=agentlens&utm_id=260001)
 
 AgentLens evaluates a coding agent the way its user experiences it — across the whole session, not just the final repository state or a pass/fail flag. We evaluate this way because binary success is too coarse for production assistants: a run can clear a narrow check and still be unreliable or unpleasant to work with, and a failing run can still do useful work along the way.
 
 Each trajectory gets formal checks where they apply — tests, repository-state and regex checks, build tasks, static analysis — plus configurable LLM-judge metrics scoring the quality dimensions users actually feel, from final result to instruction compliance, tool use, and interaction style. Every judge score comes with a written review that cites the evidence behind it, so a result is a reviewed verdict, not an opaque number — and if you're building the agent, those reviews point to what to fix, not just a score that moved.
 
 The same trajectories drive side-by-side comparisons against an anchor run, so AgentLens is useful well beyond ranking: diagnosing how agents differ, comparing versions, and catching regressions between runs.
-
-Preprint: [todo link](https://arxiv.org/abs/XXXX.XXXXX).
 
 ---
 
@@ -282,10 +280,13 @@ The CI workflow [`run-benchmark.yml`](.github/workflows/run-benchmark.yml) colle
 If you use AgentLens in your research, please cite:
 
 ```bibtex
-@misc{agentlens,
-  title  = {AgentLens: Production-Assessed Trajectory Reviews for Code Agent Evaluation},
-  author = {placeholder},
-  year   = {2026},
-  url    = {placeholder}
+@misc{podivilov2026agentlens,
+      title={AgentLens: Production-Assessed Trajectory Reviews for Coding Agent Evaluation},
+      author={Andrey Podivilov and Vadim Lomshakov and Sergey Savin and Matvei Startsev and Roman Pozharskiy and Maksim Parshin and Sergey Nikolenko},
+      year={2026},
+      eprint={2607.06624},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2607.06624},
 }
 ```
