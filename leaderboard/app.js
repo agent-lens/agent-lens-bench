@@ -217,7 +217,6 @@ function renderTable() {
   tableHostEl.innerHTML = "";
   tableHostEl.appendChild(table);
   tableHostEl.hidden = false;
-  rowCountEl.textContent = `${sortedRows.length} of ${rows.length} entries`;
   statusEl.hidden = true;
 }
 
@@ -226,7 +225,7 @@ function setStatus(message) {
   statusEl.hidden = false;
 }
 
-function loadParsedData(headers, rows, sourceLabel) {
+function loadParsedData(headers, rows) {
   if (!headers.length || !rows.length) {
     throw new Error("Leaderboard CSV is empty");
   }
@@ -242,15 +241,11 @@ function loadParsedData(headers, rows, sourceLabel) {
   };
 
   renderTable();
-
-  if (sourceLabel) {
-    rowCountEl.textContent = `${rows.length} entries · ${sourceLabel}`;
-  }
 }
 
-function loadCsvText(csvText, sourceLabel) {
+function loadCsvText(csvText) {
   const { headers, rows } = parseCsv(csvText);
-  loadParsedData(headers, rows, sourceLabel);
+  loadParsedData(headers, rows);
 }
 
 async function loadLeaderboard() {
@@ -262,12 +257,11 @@ async function loadLeaderboard() {
     }
 
     const csvText = await response.text();
-    loadCsvText(csvText, "from data/leaderboard.csv");
+    loadCsvText(csvText);
   } catch (error) {
     setStatus(
-      "Could not load leaderboard data. Check that data/leaderboard.csv exists and that the site is being served over HTTP(S), such as via GitHub Pages."
+      "Could not load leaderboard data."
     );
-    rowCountEl.textContent = "No data";
     console.error(error);
   }
 }
