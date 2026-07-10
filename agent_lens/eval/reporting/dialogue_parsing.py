@@ -1,6 +1,6 @@
 """Helpers for extracting structured parts from LLM dialogues."""
 
-from agent_lens.eval.metrics.llm_judge.common.prompt_builders import (
+from agent_lens.eval.metrics.llm_judge.common.prompts.instructions import (
     COMPARISON_SEPARATOR,
     PAIRWISE_SCORE_SEPARATOR,
     PROMPT_RESPONSE_SEPARATOR,

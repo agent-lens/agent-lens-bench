@@ -3,6 +3,37 @@ from agent_lens.eval.metrics.llm_judge.interfaces.pairwise_llm_metrics import (
     PairwiseLlmMetric,
 )
 
+PITFALLS_SINGLE_RUN_INSTRUCTION = """\
+Identify and diagnose fixable pitfalls in the agent's behavior that hindered the user.
+This is about instability patterns and self-sabotage dynamics (often harness/tooling/workflow), not end-result quality.
+
+Extract pitfalls using this rubric. For each distinct pitfall, provide:
+- Category: Logic/Code faults | Tool/Harness faults | Process/Interaction faults | Something else
+- Severity: low/medium/high
+- Frequency: once/repeated
+- Evidence: a short quote (tool name + error text, or a brief message fragment)
+- Mechanism: 1 short clause on why this happened (root cause)
+
+Counting rule (mandatory):
+- One behavioral cluster (e.g., a loop of identical tool calls) counts as at most one pitfall; if it repeats with the same root cause, mark it as Frequency=repeated.
+
+Pitfall burden total (mandatory):
+- severity points: low=1, medium=3, high=7
+- frequency multiplier: once=x1, repeated=x2
+- Total = sum(severity_points * frequency_multiplier) across distinct pitfalls
+
+Write pitfalls as structured lines so they can be reused later:
+`Pitfall: <free text> | Category: ... | Severity: ... | Frequency: ... | Evidence: ... | Mechanism: ...`
+Also include one line: `BurdenTotal=<Total>`.
+"""
+
+PITFALLS_SINGLE_RUN_SCORING_GUIDELINES = """\
+Score should be a number from [0, 0.5, 1], where:
+- 0 means miserable performance,
+- 0.5 means tolerable,
+- 1 means actually good.
+"""
+
 
 class PitfallsMetric(LlmMetric, PairwiseLlmMetric):
     @staticmethod
@@ -79,35 +110,8 @@ These numbers must be consistent with your pitfall list and with the mapping rul
 
     @property
     def _single_run_specific_instruction(self) -> str:
-        return """\
-Identify and diagnose fixable pitfalls in the agent's behavior that hindered the user.
-This is about instability patterns and self-sabotage dynamics (often harness/tooling/workflow), not end-result quality.
-
-Extract pitfalls using this rubric. For each distinct pitfall, provide:
-- Category: Logic/Code faults | Tool/Harness faults | Process/Interaction faults | Something else
-- Severity: low/medium/high
-- Frequency: once/repeated
-- Evidence: a short quote (tool name + error text, or a brief message fragment)
-- Mechanism: 1 short clause on why this happened (root cause)
-
-Counting rule (mandatory):
-- One behavioral cluster (e.g., a loop of identical tool calls) counts as at most one pitfall; if it repeats with the same root cause, mark it as Frequency=repeated.
-
-Pitfall burden total (mandatory):
-- severity points: low=1, medium=3, high=7
-- frequency multiplier: once=x1, repeated=x2
-- Total = sum(severity_points * frequency_multiplier) across distinct pitfalls
-
-Write pitfalls as structured lines so they can be reused later:
-`Pitfall: <free text> | Category: ... | Severity: ... | Frequency: ... | Evidence: ... | Mechanism: ...`
-Also include one line: `BurdenTotal=<Total>`.
-"""
+        return PITFALLS_SINGLE_RUN_INSTRUCTION
 
     @property
     def _single_run_scoring_guidelines(self) -> str:
-        return """\
-Score should be a number from [0, 0.5, 1], where:
-- 0 means miserable performance,
-- 0.5 means tolerable,
-- 1 means actually good.
-"""
+        return PITFALLS_SINGLE_RUN_SCORING_GUIDELINES

@@ -3,6 +3,19 @@ from agent_lens.eval.metrics.llm_judge.interfaces.pairwise_llm_metrics import (
     PairwiseLlmMetric,
 )
 
+TEST_COVERAGE_SINGLE_RUN_INSTRUCTION = """\
+Assess semantic/exhaustive coverage of the produced test (end result only).
+Evaluate whether the test covers meaningful requirements and code paths: happy path + key edge cases, realistic scenarios, and important branches.
+Call out missing critical cases or overly narrow/unrealistic coverage.
+"""
+
+TEST_COVERAGE_SINGLE_RUN_SCORING_GUIDELINES = """\
+Score should be a number from [0, 0.5, 1], where:
+- 0 means rather pointless (paths too narrow/unrealistic),
+- 0.5 means covers most meaningful behavior but misses key edge cases,
+- 1 means exhaustive.
+"""
+
 
 class TestSemanticCoverageMetric(LlmMetric, PairwiseLlmMetric):
     @staticmethod
@@ -23,17 +36,8 @@ Call out missing critical cases or overly narrow/unrealistic coverage, and state
 
     @property
     def _single_run_specific_instruction(self) -> str:
-        return """\
-Assess semantic/exhaustive coverage of the produced test (end result only).
-Evaluate whether the test covers meaningful requirements and code paths: happy path + key edge cases, realistic scenarios, and important branches.
-Call out missing critical cases or overly narrow/unrealistic coverage.
-"""
+        return TEST_COVERAGE_SINGLE_RUN_INSTRUCTION
 
     @property
     def _single_run_scoring_guidelines(self) -> str:
-        return """\
-Score should be a number from [0, 0.5, 1], where:
-- 0 means rather pointless (paths too narrow/unrealistic),
-- 0.5 means covers most meaningful behavior but misses key edge cases,
-- 1 means exhaustive.
-"""
+        return TEST_COVERAGE_SINGLE_RUN_SCORING_GUIDELINES

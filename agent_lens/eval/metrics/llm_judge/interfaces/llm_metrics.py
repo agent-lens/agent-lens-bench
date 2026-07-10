@@ -1,32 +1,25 @@
 import abc
-import logging
 import random
-import re
-from typing import Any, Dict, Mapping, Optional, Tuple
+from typing import Any, Dict, Mapping
 
-from agent_lens.eval.metrics.llm_judge.common.prompt_builders import (
-    PROMPT_RESPONSE_SEPARATOR,
-    REVIEW_SEPARATOR,
-    SCORE_SEPARATOR,
+from agent_lens.eval.metrics.llm_judge.common.prompts import (
     build_single_run_prompt,
     build_single_run_summary_prompt,
+)
+from agent_lens.eval.metrics.llm_judge.common.prompts.instructions import (
+    DEFAULT_SINGLE_RUN_SCORING_GUIDELINES,
+    PROMPT_RESPONSE_SEPARATOR,
 )
 from agent_lens.eval.data_framework.field_names import FieldNames
 from agent_lens.eval.metrics.analytics.get_analytics import (
     get_basic_stats_chat_level,
 )
 from agent_lens.eval.metrics.llm_judge.interfaces.llm_api import LlmApi
+from agent_lens.eval.metrics.llm_judge.parsing.review_score import (
+    parse_single_run_response,
+)
 
-LOG = logging.getLogger(__name__)
 MAX_LLM_REVIEWED_POOL_SIZE = 50
-SCORE_TOKEN_TO_VALUE = {
-    "0": 0.0,
-    "0.0": 0.0,
-    "1": 1.0,
-    "1.0": 1.0,
-    "0.5": 0.5,
-}
-SCORE_TOKEN_RE = re.compile(r"(?<!\d)(?:0(?:\.0|\.5)?|1(?:\.0)?)(?!\d)")
 
 
 class LlmMetric(LlmApi, abc.ABC):
@@ -64,7 +57,7 @@ class LlmMetric(LlmApi, abc.ABC):
         prompt_ids, prompt_texts = list(prompts.keys()), list(prompts.values())
         dialogues = self.get_llm_responses([p for p in prompt_texts])
         for idx, dialogue in zip(prompt_ids, dialogues):
-            review_text, score = self._parse_single_run_response(dialogue)
+            review_text, score = parse_single_run_response(dialogue)
             self.data[idx][self.get_name()] = {
                 FieldNames.JUDGE_SCORE: score,
                 FieldNames.JUDGE_REVIEW: review_text,
@@ -87,60 +80,7 @@ class LlmMetric(LlmApi, abc.ABC):
 
     @property
     def _single_run_scoring_guidelines(self) -> str:
-        return """\
-Score should be a number from [0, 0.5, 1], where:
-- 0 means poor performance,
-- 0.5 means tolerable performance,
-- 1 means good performance.
-"""
-
-    @staticmethod
-    def _parse_score_token(raw_score: str) -> Optional[float]:
-        token_match = SCORE_TOKEN_RE.search(raw_score)
-        if token_match is None:
-            return None
-
-        return SCORE_TOKEN_TO_VALUE.get(token_match.group(0))
-
-    @classmethod
-    def _parse_single_run_response(cls, dialogue: str) -> Tuple[str, Optional[float]]:
-        response = dialogue.split(PROMPT_RESPONSE_SEPARATOR)[-1]
-
-        review_idx = response.find(REVIEW_SEPARATOR)
-        score_idx = response.rfind(SCORE_SEPARATOR)
-
-        if score_idx == -1:
-            excerpt = response.strip().replace("\n", " ")
-            max_len = 500
-            if len(excerpt) > max_len:
-                excerpt = excerpt[:max_len] + "…"
-            LOG.warning(
-                "Could not parse LLM judge response (no <Score> tag); returning None score. Excerpt: %s",
-                excerpt,
-            )
-            return response.strip(), None
-
-        # Prefer the explicit <Review> tag, but tolerate malformed outputs.
-        if 0 <= review_idx < score_idx:
-            review_text = response[
-                review_idx + len(REVIEW_SEPARATOR) : score_idx
-            ].strip()
-        else:
-            review_text = response[:score_idx].strip()
-
-        raw_score = response[score_idx + len(SCORE_SEPARATOR) :].strip()
-        score = cls._parse_score_token(raw_score)
-        if score is None:
-            excerpt = raw_score.strip().replace("\n", " ")
-            max_len = 200
-            if len(excerpt) > max_len:
-                excerpt = excerpt[:max_len] + "…"
-            LOG.warning(
-                "Could not parse LLM judge score token; returning None score. Raw: %s",
-                excerpt,
-            )
-
-        return review_text, score
+        return DEFAULT_SINGLE_RUN_SCORING_GUIDELINES
 
     def _compose_review_for_aggregation(self, p: Dict) -> str:
         return str(p[self.get_name()].get(FieldNames.JUDGE_REVIEW) or "")
@@ -154,7 +94,6 @@ Score should be a number from [0, 0.5, 1], where:
         reviews = [self._compose_review_for_aggregation(p) for p in self.data.values()]
         aggregation_prompt = build_single_run_summary_prompt(
             per_point_analysis=reviews,
-            metric_name=self.get_name(),
             single_run_aggregation_specific_instruction=self._single_run_aggregation_specific_instruction,
             config_dict=self.config_dict,
         )

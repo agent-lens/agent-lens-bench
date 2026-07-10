@@ -3,17 +3,18 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 from agent_lens.eval.metrics.llm_judge.interfaces.llm_api import LlmApi
-from agent_lens.eval.metrics.llm_judge.parsing.tags import (
-    extract_section,
-    parse_alert_flag,
+from agent_lens.eval.metrics.llm_judge.common.prompts import (
+    build_pairwise_prompt,
+    build_trajectory_comparisons_summary_prompt,
 )
-from agent_lens.eval.metrics.llm_judge.common.prompt_builders import (
-    ALERT_FLAG_SEPARATOR,
+from agent_lens.eval.metrics.llm_judge.common.prompts.instructions import (
     COMPARISON_SEPARATOR,
     PAIRWISE_SCORE_SEPARATOR,
     PROMPT_RESPONSE_SEPARATOR,
-    build_pairwise_prompt,
-    build_trajectory_comparisons_summary_prompt,
+)
+from agent_lens.eval.metrics.llm_judge.parsing.review_score import (
+    parse_comparison_summary,
+    parse_pairwise_score_int,
 )
 
 
@@ -107,36 +108,6 @@ class PairwiseLlmMetric(LlmApi, abc.ABC):
             + "\n\n(Negative score favours Agent 1, positive -- Agent 2. Scores are from -5 to 5.)"
         )
 
-    @staticmethod
-    def _parse_pairwise_score_int(content: str) -> Optional[int]:
-        if content.count(PAIRWISE_SCORE_SEPARATOR) == 0:
-            score_start = None
-        elif content.count(PAIRWISE_SCORE_SEPARATOR) == 1:
-            score_start = content.find(PAIRWISE_SCORE_SEPARATOR) + len(
-                PAIRWISE_SCORE_SEPARATOR
-            )
-        elif content.count(f"\n{PAIRWISE_SCORE_SEPARATOR}") > 0:
-            score_start = content.find(f"\n{PAIRWISE_SCORE_SEPARATOR}") + len(
-                f"\n{PAIRWISE_SCORE_SEPARATOR}"
-            )
-        else:
-            score_start = content.find(PAIRWISE_SCORE_SEPARATOR) + len(
-                PAIRWISE_SCORE_SEPARATOR
-            )
-
-        if score_start is None:
-            return None
-
-        raw_after = content[score_start:].strip()
-        if not raw_after:
-            return None
-
-        first_token = raw_after.split(None, 1)[0].split("<", 1)[0].strip()
-        try:
-            return int(first_token)
-        except ValueError:
-            return None
-
     def _parse_per_task(self, dialogue: str, key: str) -> TrajectoryBasedComparison:
         content = dialogue.split(PROMPT_RESPONSE_SEPARATOR)[-1]
 
@@ -144,7 +115,7 @@ class PairwiseLlmMetric(LlmApi, abc.ABC):
         if COMPARISON_SEPARATOR in content:
             comp_start = content.find(COMPARISON_SEPARATOR) + len(COMPARISON_SEPARATOR)
 
-        score_int = self._parse_pairwise_score_int(content)
+        score_int = parse_pairwise_score_int(content)
         score_tag_start = content.find(PAIRWISE_SCORE_SEPARATOR)
 
         comparison_text = ""
@@ -164,11 +135,7 @@ class PairwiseLlmMetric(LlmApi, abc.ABC):
         )
 
     def _parse_summary(self, response: str) -> ComparisonSummary:
-        content = response.split(PROMPT_RESPONSE_SEPARATOR)[-1]
-        review_text = extract_section(
-            content, start_tag=COMPARISON_SEPARATOR, end_tag=ALERT_FLAG_SEPARATOR
-        )
-        judge_alert_flag = parse_alert_flag(content, ALERT_FLAG_SEPARATOR)
+        review_text, judge_alert_flag = parse_comparison_summary(response)
         return ComparisonSummary(
             review=review_text,
             chats_reviewed=[f"{i + 1}: {k}" for i, k in enumerate(self.ordered_keys)],

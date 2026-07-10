@@ -6,9 +6,9 @@ from agent_lens.eval.metrics.llm_judge.common.review_style_user import (
     get_answer_language_instruction,
     get_user_specific_prompt_instruction,
 )
-from agent_lens.eval.metrics.llm_judge.common.prompt_builders import (
-    LlmJudgeInstructions,
+from agent_lens.eval.metrics.llm_judge.common.prompts.instructions import (
     PROMPT_RESPONSE_SEPARATOR,
+    SYSTEM_PROMPT,
 )
 
 
@@ -26,7 +26,7 @@ class ComparisonTldr(LlmApi):
             self.config_dict
         )
         prompt = f"""
-{LlmJudgeInstructions.SYSTEM_PROMPT}
+{SYSTEM_PROMPT}
 
 We have run two IDE agents to compare them on our benchmark. Below you can see the resulting comparison for Agent 1 and Agent 2. I will explain some crucial instructions first and then provide the data itself.
 

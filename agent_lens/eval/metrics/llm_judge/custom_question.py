@@ -2,6 +2,21 @@ from typing import Dict
 
 from agent_lens.eval.metrics.llm_judge.interfaces.llm_metrics import LlmMetric
 
+CUSTOM_QUESTION_SINGLE_RUN_INSTRUCTION_TEMPLATE = """\
+Answer the following question based on the trajectory and supporting data:
+
+Question:
+{question}
+"""
+
+CUSTOM_QUESTION_SINGLE_RUN_SCORING_GUIDELINES = """\
+Scoring policy:
+- Score must be one of [0, 0.5, 1].
+- 1 means the agent's behavior fully satisfies the question and is clearly correct.
+- 0.5 means partially satisfactory or uncertain.
+- 0 means unsatisfactory or clearly incorrect.
+"""
+
 
 class CustomQuestionMetric(LlmMetric):
     """A generic LLM-judge metric that asks a user-provided question."""
@@ -20,19 +35,10 @@ class CustomQuestionMetric(LlmMetric):
 
     @property
     def _single_run_specific_instruction(self) -> str:
-        return f"""\
-Answer the following question based on the trajectory and supporting data:
-
-Question:
-{self._question}
-"""
+        return CUSTOM_QUESTION_SINGLE_RUN_INSTRUCTION_TEMPLATE.format(
+            question=self._question
+        )
 
     @property
     def _single_run_scoring_guidelines(self) -> str:
-        return """\
-Scoring policy:
-- Score must be one of [0, 0.5, 1].
-- 1 means the agent's behavior fully satisfies the question and is clearly correct.
-- 0.5 means partially satisfactory or uncertain.
-- 0 means unsatisfactory or clearly incorrect.
-"""
+        return CUSTOM_QUESTION_SINGLE_RUN_SCORING_GUIDELINES
