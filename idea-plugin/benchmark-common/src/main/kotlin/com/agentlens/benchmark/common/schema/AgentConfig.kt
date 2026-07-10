@@ -14,4 +14,6 @@ data class AgentConfig(
     val agentEngine: AgentEngine,
     val scenarioPaths: List<String>,
     val userPaths: List<String>,
+    val numAttempts: Int = 1,
+    val failureTerminationReasons: List<String> = emptyList(),
 )
