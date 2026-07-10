@@ -6,9 +6,9 @@ from agent_lens.eval.metrics.llm_judge.common.review_style_user import (
     get_answer_language_instruction,
     get_user_specific_prompt_instruction,
 )
-from agent_lens.eval.metrics.llm_judge.common.prompt_builders import (
-    LlmJudgeInstructions,
+from agent_lens.eval.metrics.llm_judge.common.prompts.instructions import (
     PROMPT_RESPONSE_SEPARATOR,
+    SYSTEM_PROMPT,
 )
 
 
@@ -30,7 +30,7 @@ class EvalTldr(LlmApi):
         )
 
         return f"""
-{LlmJudgeInstructions.SYSTEM_PROMPT}
+{SYSTEM_PROMPT}
 
 We have run one IDE agent on our benchmark and computed aggregated metrics.
 

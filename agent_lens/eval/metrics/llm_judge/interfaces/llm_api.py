@@ -9,9 +9,9 @@ from agent_lens.eval.metrics.llm_judge.cache.json_cache import (
     load_json_cache,
     save_json_cache,
 )
-from agent_lens.eval.metrics.llm_judge.common.prompt_builders import (
-    LlmJudgeInstructions,
+from agent_lens.eval.metrics.llm_judge.common.prompts.instructions import (
     PROMPT_RESPONSE_SEPARATOR,
+    SYSTEM_PROMPT,
 )
 from agent_lens.eval.metrics.llm_judge.providers.openai_compat import (
     resolve_openai_compatible_base_url,
@@ -83,7 +83,7 @@ class LlmApi(abc.ABC):
 
         # API keys are wired by CLI/pipeline.
 
-        system_prompt = LlmJudgeInstructions.SYSTEM_PROMPT
+        system_prompt = SYSTEM_PROMPT
 
         def llm_single_query(user_prompt: str) -> str:
             cache_key = self._get_cache_key(

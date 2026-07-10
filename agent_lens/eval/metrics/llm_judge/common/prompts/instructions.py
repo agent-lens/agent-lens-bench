@@ -1,10 +1,5 @@
-from typing import Any, Mapping, Dict
+from typing import Any, List, Mapping
 
-from agent_lens.eval.common.trajectory import get_last_simulator_request_messages
-from agent_lens.eval.data_framework.field_names import FieldNames
-from agent_lens.eval.metrics.llm_judge.common.judge_data import (
-    get_judge_review_or_symmetric_stub,
-)
 from agent_lens.eval.metrics.llm_judge.common.review_style_user import (
     get_answer_language_instruction,
     get_user_specific_prompt_instruction,
@@ -17,33 +12,60 @@ COMPARISON_SEPARATOR = "<Comparison>"
 ALERT_FLAG_SEPARATOR = "<AlertFlag>"
 PAIRWISE_SCORE_SEPARATOR = "<PairwiseScore>"
 
-AGENT_ACTIONS_SUMMARY_TAG = "agent_actions_summary"
+SYSTEM_PROMPT = """You are a coding expert and an objective critic. Your work will be checked and judged later on. Vagueness leads to your death."""
+
+OUT_FORMAT_REVIEW_SCORE = f"""\
+Response consists of 2 parts:
+- {REVIEW_SEPARATOR}, 2 to 5 sentences narrative focused on the metric. After the narrative, add 1 to 6 short structured evidence lines when applicable:
+  `Aspect: <free text> | Severity: low/medium/high | Evidence: <short quote/tool/error>`
+  Make Aspect-lines concrete and reusable: they are the main guide for later aggregation.
+  Severity is absolute (not delta-based).
+- {SCORE_SEPARATOR}, the sole final number. Must be one number and nothing else.
+
+Template:
+{REVIEW_SEPARATOR}
+[2-5 sentences]
+Aspect: ... | Severity: ... | Evidence: ...
+...
+
+{SCORE_SEPARATOR}
+[0|0.5|1]"""
+
+END_OF_PROMPT = """Provide your response in the requested format:"""
+
+FOCUS_ON_END_RESULT = """<Focus>\nFor this task, focus on the **end result** solely: does not matter what the path to get there was. You might get a lot of irrelevant information from the user-agent dialogue. Extract what the end result looks like and evaluate it in isolation. E.g., if you need to evaluate code of some class, you should ignore all messages from the user-agent dialogue, as well as all the versions of that code which did not make it to the end and were revised.\n</Focus>"""
+
+DEFAULT_SINGLE_RUN_SCORING_GUIDELINES = """\
+Score should be a number from [0, 0.5, 1], where:
+- 0 means poor performance,
+- 0.5 means tolerable performance,
+- 1 means good performance.
+"""
 
 
-def build_one_run_summary_instructions(
-    metrics_specific_instruction: str,
-    config_dict: Mapping[str, Any],
-) -> str:
-    answer_language_instruction = get_answer_language_instruction(config_dict)
-    user_specific_instruction = get_user_specific_prompt_instruction(config_dict)
-    return f"""<Task>
-Your task is to summarize the main findings from the above reviews into one comprehensive report. Support claims with citations or explicit references. Try to keep as much specifics as possible so that your summary is actionable and useful for debugging. Never hand-wave, be trivial or overgeneralize.
+def build_data_aggregate_section(per_point_analysis: List[str]) -> str:
+    if len(per_point_analysis) == 0:
+        return 'No Examples given! Respond with "No Examples Given"!'
+    return (
+        "Below you have a list of reviews with findings from individual data points.\n<Reviews>\n"
+        + "\n\n".join(
+            [f"Review: R{i + 1}\n" + e for i, e in enumerate(per_point_analysis)]
+        )
+        + "\n</Reviews>"
+    )
 
-<Examples>
-- A good Example, helpful sentence:
-    'Recurring workflow failures included not verifying test discovery or execution and claiming success without evidence (e.g., “Test class not found,” missing Gradle output) [R1, R5, R6, R8].'
-- A bad Example, verbose, trivial and unhelpful sentence:
-    'Overall, outcomes were strongest when the agent grounded tests in actual types and signatures, followed existing test patterns, and applied targeted configuration fixes.'
-</Examples>
 
-{metrics_specific_instruction}
+SUMMARY_TASK_INTRO = """\
+Your task is to summarize the main findings from the above reviews into one comprehensive report. Support claims with citations or explicit references. Try to keep as much specifics as possible so that your summary is actionable and useful for debugging. Never hand-wave, be trivial or overgeneralize."""
 
+SUMMARY_INPUT_GUIDANCE = """\
 INPUT GUIDANCE:
 Each Rk may contain structured lines of the form:
 `Aspect: ... | Severity: low/medium/high | Evidence: ...`
 Treat these Aspect-lines as the main guide for extraction and summarization.
-Use the rest of each review as supporting context, especially when Aspect-lines are sparse or need clarification.
+Use the rest of each review as supporting context, especially when Aspect-lines are sparse or need clarification."""
 
+SUMMARY_EXTRACTION_STAGES = """\
 YOUR TASK (TWO-STAGE):
 Stage 1 — Extract and regroup evidence:
 1) Scan all Rk and extract the main findings, using Aspect-lines as the primary guide.
@@ -54,26 +76,23 @@ Stage 1 — Extract and regroup evidence:
 4) If Aspect-lines are missing or insufficient, use the surrounding review text to recover the same kind of concrete findings.
 
 Stage 2 — Write the concise summary:
-- Write 2 to 6 sentences that summarize the main patterns from Stage 1.
+- Summarize the main patterns from Stage 1. Hard limit: 400 words. Stay well under it unless the evidence truly needs the room.
 - Do not use vague frequency markers. If you claim frequency, state counts like "in 7 of 15 Rk".
 - Support important claims with Rk references.
+- When the supporting list is long, do not just dump every Rk token. Lead with the one or two most telling cases (quote the concrete evidence), then attach the rest as a brief reference list so the reader has something specific to grab onto first.
 - Do not propose fixes; characterize findings and recurring patterns.
-- Do not refer to Stage 1 groups, proof tables, or internal analysis directly: the end user will only read the Stage 2 summary alone.
+- Do not refer to Stage 1 groups, proof tables, or internal analysis directly: the end user will only read the Stage 2 summary alone."""
 
-DEBUG USEFULNESS:
-Make the summary useful for debugging regressions: name recurring failure patterns, likely harness-specific issues, and other concrete signals that would help explain a score.
-If you mention a problem, describe it briefly or give an Rk reference right away.
-
+SUMMARY_CITATION_AND_TONE_RULES = """\
 When you refer to specific reviewed tasks, cite them as Rk tokens such as R3 or R10. Avoid the literal form 'Rk' with k; use specific references like R3 or R10 when possible.
-Use common terminology and avoid local jargon that would be unclear to a reader outside the benchmark internals.
+Use common terminology and avoid local jargon that would be unclear to an outside reader.
 Use a neutral, third-person, objective tone.
-Use line breaks after each sentence (or each semantic section).
-{answer_language_instruction}
-{user_specific_instruction}
+Use line breaks after each sentence (or each semantic section)."""
 
+SUMMARY_OUTPUT_FORMAT = """\
 Response consists of two parts:
 - <Analysis>: proof regrouping from Stage 1.
-- <Summary>: final user-facing summary from Stage 2 only, 2 to 6 sentences long.
+- <Summary>: final user-facing summary from Stage 2 only, at most 400 words.
 
 OUTPUT FORMAT (STRICT):
 <Analysis>
@@ -84,71 +103,53 @@ AspectGroup: <name>
 </Analysis>
 
 <Summary>
-[2-6 sentences]
-</Summary>
+[concise summary, at most 400 words]
+</Summary>"""
+
+
+def build_one_run_summary_instructions(
+    metrics_specific_instruction: str,
+    config_dict: Mapping[str, Any],
+) -> str:
+    answer_language_instruction = get_answer_language_instruction(config_dict)
+    user_specific_instruction = get_user_specific_prompt_instruction(config_dict)
+    examples = """\
+<Examples>
+- A good Example, helpful sentence:
+    'The heaviest pattern was destructive recovery without safeguards — e.g. R8 ran `git reset --hard` and `git clean -fd` on a dirty tree, wiping the user’s work; similar unguarded resets/force-pushes in R1, R2, R18. A separate, milder pattern: success declared on a surrogate signal (exit code, “start ability successfully”) that later proved false — clearest in R30, also R24, R26.'
+- A bad Example, verbose, trivial and unhelpful sentence:
+    'Overall, outcomes were strongest when the agent grounded tests in actual types and signatures, followed existing test patterns, and applied targeted configuration fixes.'
+</Examples>"""
+    debug_usefulness = """\
+DEBUG USEFULNESS:
+Make the summary useful for debugging regressions: name failure patterns, likely harness-specific issues, and other concrete signals that would help explain a score.
+If you mention a problem, describe it briefly or give an Rk reference right away."""
+    return f"""\
+<Task>
+{SUMMARY_TASK_INTRO}
+
+{examples}
+
+{metrics_specific_instruction}
+
+{SUMMARY_INPUT_GUIDANCE}
+
+{SUMMARY_EXTRACTION_STAGES}
+
+{debug_usefulness}
+
+{SUMMARY_CITATION_AND_TONE_RULES}
+{answer_language_instruction}
+{user_specific_instruction}
+
+{SUMMARY_OUTPUT_FORMAT}
 </Task>"""
 
 
-def build_single_run_prompt(
-    *,
-    point: Dict,
-    metric_name: str,
-    focus_on_end_result: bool,
-    single_run_specific_instruction: str,
-    single_run_scoring_guidelines: str,
+def build_pairwise_instructions(
+    metric_name: str, pairwise_specific_instruction: str
 ) -> str:
-    """Build a prompt for direct single-run judging of one raw trajectory."""
-    prompt = f"""\
-{LlmJudgeInstructions.DATA_COMPUTE_SINGLE(point)}
-
-{LlmJudgeInstructions.FOCUS_ON_END_RESULT if focus_on_end_result else ""}
-
-<Instructions>
-Your task is to act as a precise and analytical judge of an agent-user interaction.
-Judge the agent (not the simulator) on the performance dimension '{metric_name}' only.
-
-{single_run_specific_instruction}
-</Instructions>
-
-<Scoring>
-{single_run_scoring_guidelines}
-</Scoring>
-
-{LlmJudgeInstructions.OUT_FORMAT_REVIEW_SCORE}
-
-{LlmJudgeInstructions.END_OF_PROMPT}"""
-    return prompt
-
-
-def build_single_run_summary_prompt(
-    *,
-    per_point_analysis: list[str],
-    metric_name: str,
-    single_run_aggregation_specific_instruction: str,
-    config_dict: Mapping[str, Any],
-) -> str:
-    """Build a prompt for aggregating single-run reviews into one summary."""
-    prompt = f"""\
-  {LlmJudgeInstructions.DATA_AGGREGATE(per_point_analysis)}
-
-  {build_one_run_summary_instructions(single_run_aggregation_specific_instruction, config_dict)}
-  The performance dimension that these reviews are focused on is named {metric_name}. Focus on that.
-  {LlmJudgeInstructions.END_OF_PROMPT}"""
-    return prompt
-
-
-def build_pairwise_prompt(
-    *,
-    point1: Dict,
-    point2: Dict,
-    metric_name: str,
-    pairwise_specific_instruction: str,
-) -> str:
-    """Build a prompt for direct pairwise comparison of two raw trajectories."""
-    prompt = f"""\
-{LlmJudgeInstructions.DATA_COMPUTE_PAIR(point1, point2, metric_name)}
-
-<Instructions>
+    return f"""<Instructions>
 Your task is to compare Agent 1 and Agent 2 on the SAME task instance with respect to the performance dimension '{metric_name}'.
 Use the precomputed reviews (<agent1_review>, <agent2_review>) as the primary input to your comparison to avoid positional bias.
 Do NOT introduce new aspects beyond what is present in those reviews, and do NOT revise the individual assessments inside them.
@@ -198,23 +199,16 @@ Aspect: ... | Winner: ... | Severity: ... | Evidence: ...
 [-5..5]
 </Instructions>
 
-{LlmJudgeInstructions.END_OF_PROMPT}"""
-    return prompt
+{END_OF_PROMPT}"""
 
 
-def build_trajectory_comparisons_summary_prompt(
-    comparisons_text: str,
+def build_trajectory_comparisons_summary_instructions(
     dimension_name: str,
     config_dict: Mapping[str, Any],
 ) -> str:
     answer_language_instruction = get_answer_language_instruction(config_dict)
     user_specific_instruction = get_user_specific_prompt_instruction(config_dict)
-    return f"""
-<Comparisons>
-{comparisons_text}
-</Comparisons>
-
-<Instructions>
+    return f"""<Instructions>
 Above you have a sequence of per-task pairwise comparisons between Agent 1 and Agent 2 for performance dimension '{dimension_name}'. Other dimensions are handled by other Judges, don't touch them. Each item is labeled as 'Comparison: Ck'.
 
 POSITION-INVARIANCE (MANDATORY):
@@ -297,97 +291,3 @@ AspectGroup: <name>
 [true|false]
 </Instructions>
 """
-
-
-class LlmJudgeInstructions:
-    SYSTEM_PROMPT = """You are a coding expert and an objective critic. Your work will be checked and judged later on. Vagueness leads to your death."""
-
-    OUT_FORMAT_REVIEW_SCORE = f"""\
-Response consists of 2 parts:
-- {REVIEW_SEPARATOR}, 2 to 5 sentences narrative focused on the metric. After the narrative, add 1 to 6 short structured evidence lines when applicable:
-  `Aspect: <free text> | Severity: low/medium/high | Evidence: <short quote/tool/error>`
-  Make Aspect-lines concrete and reusable: they are the main guide for later aggregation.
-  Severity is absolute (not delta-based).
-- {SCORE_SEPARATOR}, the sole final number. Must be one number and nothing else.
-
-Template:
-{REVIEW_SEPARATOR}
-[2-5 sentences]
-Aspect: ... | Severity: ... | Evidence: ...
-...
-
-{SCORE_SEPARATOR}
-[0|0.5|1]"""
-
-    DATA_COMPUTE_SINGLE = (
-        lambda point: f"""
-{get_last_simulator_request_messages(point)}
-
-Above you have a history of interactions between a user simulator and an agent. This history contains additional system info and system messages that we have passed to the simulator during the conversation. Some parts were truncated to shorten your prompt and the user simulator’s prompt. For example, you might see "remaining characters are omitted only from the User Simulator’s prompt..." message. It means that an original transcript was truncated only after the task was completed.
-Tool call responses might contain lists of errors that occurred during the tool call: if such a list is empty, it means that there were no errors (e.g., empty compilation_errors section for edit_file tool). The last user message might not be present in the history: either because the user decided to terminate the chat or because a time limit was reached; the reason is unknown.
-Note that this interaction was collected in a benchmark environment, that differs from real life situations: for example, when the agent catches a timeout, it means that it has probably hit the benchmark time limit.
-Your task is to judge the agent, not the simulator. So if the task is not achieved due to user simulator failures, it should not affect the score you give. Treat the simulator's actions as a given, even if they seem suboptimal, and judge the agent based on how well it responds within that context.
-There might be an <{AGENT_ACTIONS_SUMMARY_TAG}> section in their chat. We append it to help the simulator understand what the agent did. As the simulator-agent conversation progresses, this info gets updated and appended to the last agent message sent to the simulator. All previous information gets dropped from the previous messages though, so you don't see them in the given history. This system info consists of:
- - a section with a list of compilation errors from IDE analysis (project errors); if empty, there are no compilation errors in the project;
- - all the code diffs made by the agent (maybe empty);
- - the most recent cmd calls (maybe empty).
-Note that we use a simulator instead of a real user: it behaves based on character traits given to it.
-
-Below we've gathered a final summary of the agent's actions and state of the project:
-<{AGENT_ACTIONS_SUMMARY_TAG}>
-{point[FieldNames.AGENT_TRACE_PROMPT]}
-</{AGENT_ACTIONS_SUMMARY_TAG}>
-
-The chat has terminated for the following reason:
-<termination_reason>
-{point[FieldNames.TERMINATION_REASON] if len(point[FieldNames.TERMINATION_REASON]) > 0 else "Unknown"}
-</termination_reason>
-"""
-    )
-
-    DATA_COMPUTE_PAIR = (
-        lambda point1, point2, metric_name: f"""
-<agent1_trajectory>
-{get_last_simulator_request_messages(point1)}
-</agent1_trajectory>
-
-<agent2_trajectory>
-{get_last_simulator_request_messages(point2)}
-</agent2_trajectory>
-
-Above are two chat transcripts (each between a user simulator and an agent) for the same task, one per agent, delimited by <agent1_trajectory> and <agent2_trajectory> tags. Some parts were truncated to shorten your prompt and the user simulator’s prompt. For example, you might see "remaining characters are omitted **only from the User Simulator’s prompt**..." message. It means that an original transcript was truncated only after the task was completed.
-
-<agent1_review>
-{
-            get_judge_review_or_symmetric_stub(
-                point=point1, reference_point=point2, metric_name=metric_name
-            )
-        }
-</agent1_review>
-
-<agent2_review>
-{
-            get_judge_review_or_symmetric_stub(
-                point=point2, reference_point=point1, metric_name=metric_name
-            )
-        }
-</agent2_review>
-
-The two blocks above, delimited by the <agent1_review> and <agent2_review> tags, are precomputed single-trajectory reviews from another pipeline. They are for the same task instance, one per agent, both focused on the same performance dimension. They were computed independently from the raw transcripts.
-The performance dimension name for these reviews is '{metric_name}'. 
-"""
-    )
-
-    DATA_AGGREGATE = (
-        lambda per_point_analysis: "Below you have a list of reviews with findings from individual data points.\n<Reviews>\n"
-        + "\n\n".join(
-            [f"Review: R{i + 1}\n" + e for i, e in enumerate(per_point_analysis)]
-        )
-        + "\n</Reviews>"
-        if len(per_point_analysis) > 0
-        else 'No Examples given! Respond with "No Examples Given"!'
-    )
-
-    END_OF_PROMPT = """Provide your response in the requested format:"""
-
-    FOCUS_ON_END_RESULT = """<Focus>\nFor this task, focus on the **end result** solely: does not matter what the path to get there was. You might get a lot of irrelevant information from the user-agent dialogue. Extract what the end result looks like and evaluate it in isolation. E.g., if you need to evaluate code of some class, you should ignore all messages from the user-agent dialogue, as well as all the versions of that code which did not make it to the end and were revised.\n</Focus>"""

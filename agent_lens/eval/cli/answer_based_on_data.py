@@ -14,7 +14,7 @@ from agent_lens.eval.data_framework.field_names import FieldNames
 from agent_lens.eval.metrics.llm_judge.custom_question import (
     CustomQuestionMetric,
 )
-from agent_lens.eval.metrics.llm_judge.common.prompt_builders import (
+from agent_lens.eval.metrics.llm_judge.common.prompts.instructions import (
     PROMPT_RESPONSE_SEPARATOR,
 )
 from agent_lens.eval.metrics.llm_judge.common.review_style_user import (
