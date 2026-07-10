@@ -471,76 +471,139 @@ abstract class AbstractAgentBenchmarkRunner(
         val repo = getGitRepo(this@runForScenariosFlow)
         enableSilentGitAutoAdd(this@runForScenariosFlow)
 
-        val results = mutableListOf<AgentResult>()
+        val successResults = mutableListOf<AgentSuccessResult>()
         usageHolder.usage = LlmUsage()
         withBackgroundProgress(this@runForScenariosFlow, "Running Benchmarks") {
             logger.info("Running Benchmarks...")
 
-            scenarios.forEach { scenario ->
+            val numAttempts = config.numAttempts.coerceAtLeast(1)
+            var runsToAttempt = scenarios.flatMap { scenario ->
                 val scenarioName = Path(scenario.scenarioPath).nameWithoutExtension
-                userDescriptions.filterKeys { userName ->
-                    existingResults.none { result ->
-                         result.scenarioName == scenarioName && result.simulatorName == userName
-                    }
-                }.toList().zipWithIndex().forEachWithProgress { indexedUser ->
-                    withProgressText("Scenario ${scenario.scenarioPath}; User ${indexedUser.index}") {
-                        logger.info("Scenario ${scenario.scenarioPath}; User ${indexedUser.index}")
-
-                        if (usageHolder.usage.price >= config.budgetDollarsLimit) {
-                            logger.error { "Price limit has been exceeded: ${usageHolder.usage.price}" }
-                            // Skip rest of the points if the limit is exceeded
-                            return@withProgressText
+                userDescriptions.keys
+                    .filter { userName ->
+                        existingResults.none { result ->
+                            result.scenarioName == scenarioName && result.simulatorName == userName
                         }
+                    }
+                    .map { userName -> scenario.scenarioPath to userName }
+            }.toSet()
 
+            for (attempt in 1..numAttempts) {
+                val failedRuns = mutableSetOf<Pair<String, String>>()
+                val failureResults = mutableListOf<AgentFailureResult>()
+
+                scenarios.forEach { scenario ->
+                    userDescriptions.filterKeys { userName ->
+                        scenario.scenarioPath to userName in runsToAttempt
+                    }.toList().zipWithIndex().forEachWithProgress { indexedUser ->
                         val (userName, userDescription) = indexedUser.value
-                        val messageDir = createTempDirectory(whereToSaveDumps, "${scenarioName}-${userName}-")
-                        val messagePath = messageDir.nameWithoutExtension
+                        withProgressText("Attempt $attempt; Scenario ${scenario.scenarioPath}; User ${indexedUser.index}") {
+                            logger.info("Attempt $attempt; Scenario ${scenario.scenarioPath}; User ${indexedUser.index}")
 
-                        try {
-                            logger.clearCapturedErrors()
-
-                            val repoHash = HashImpl.build(scenario.repoHash ?: config.defaultRepoHash)
-                            val branch = scenario.branch ?: config.defaultBranch
-                            callGitHardReset(this@runForScenariosFlow, repo, repoHash, branch)
-
-                            stopAllRunningProcesses()
-
-                            scenario.preprocessors.forEach {
-                                it.prepareProject(this@runForScenariosFlow, repo)
+                            if (usageHolder.usage.price >= config.budgetDollarsLimit) {
+                                logger.error { "Price limit has been exceeded: ${usageHolder.usage.price}" }
+                                // Skip rest of the points if the limit is exceeded
+                                return@withProgressText
                             }
 
-                            syncBuildSystem(this@runForScenariosFlow, false)
-
-                            openScenarioFiles(this@runForScenariosFlow, scenario)
-                            closeTerminalTabs(this@runForScenariosFlow)
-
-                            results += this@runForScenariosFlow.runUserAgentLoop(
-                                scenario = scenario,
-                                scenarioName = scenarioName,
-                                userName = userName,
-                                userDescription = userDescription,
-                                agentEngine = config.agentEngine,
-                                messageDir = messageDir,
-                                messagePath = messagePath
+                            val agentResult = this@runForScenariosFlow.runSingleScenario(
+                                scenario, userName, userDescription, config, whereToSaveDumps, repo
                             )
 
-                            send(AgentProjectResults(this@runForScenariosFlow.name, results))
-                        } catch (e: Exception) {
-                            logger.error(e) { "User-agent loop failed on scenario \"$scenarioName\" with exception" }
+                            when (agentResult) {
+                                is AgentSuccessResult -> successResults.add(agentResult)
+                                is AgentFailureResult -> {
+                                    logger.error(agentResult.failureReason) {
+                                        "User-agent loop failed on scenario \"${agentResult.scenarioName}\" with exception"
+                                    }
+                                    failedRuns.add(scenario.scenarioPath to userName)
+                                    failureResults.add(agentResult)
+                                }
+                            }
 
-                            results += AgentFailureResult(
-                                scenarioName = scenarioName,
-                                simulatorName = userName,
-                                messagePath = messagePath,
-                                errors = logger.getCapturedErrors(),
-                                failureReason = e.message,
+                            send(
+                                AgentProjectResults(
+                                    this@runForScenariosFlow.name,
+                                    failureResults + successResults
+                                )
                             )
-
-                            send(AgentProjectResults(this@runForScenariosFlow.name, results))
                         }
                     }
                 }
+
+                if (failedRuns.isEmpty() || attempt == numAttempts) {
+                    break
+                }
+
+                runsToAttempt = failedRuns
+                logger.info("Benchmark attempt $attempt had failures; rerunning ${failedRuns.size} failed scenario runs")
             }
+        }
+    }
+
+    private suspend fun Project.runSingleScenario(
+        scenario: AgentScenario,
+        userName: String,
+        userDescription: String,
+        config: AgentConfig,
+        whereToSaveDumps: Path,
+        repo: GitRepository,
+    ): AgentResult {
+        val scenarioName = Path(scenario.scenarioPath).nameWithoutExtension
+        val messageDir = createTempDirectory(whereToSaveDumps, "${scenarioName}-${userName}-")
+        val messagePath = messageDir.nameWithoutExtension
+
+        try {
+            logger.clearCapturedErrors()
+
+            val repoHash = HashImpl.build(scenario.repoHash ?: config.defaultRepoHash)
+            val branch = scenario.branch ?: config.defaultBranch
+            callGitHardReset(this@runSingleScenario, repo, repoHash, branch)
+
+            stopAllRunningProcesses()
+
+            scenario.preprocessors.forEach {
+                it.prepareProject(this@runSingleScenario, repo)
+            }
+
+            syncBuildSystem(this@runSingleScenario, false)
+
+            openScenarioFiles(this@runSingleScenario, scenario)
+            closeTerminalTabs(this@runSingleScenario)
+
+            val result = this@runSingleScenario.runUserAgentLoop(
+                scenario = scenario,
+                scenarioName = scenarioName,
+                userName = userName,
+                userDescription = userDescription,
+                agentEngine = config.agentEngine,
+                messageDir = messageDir,
+                messagePath = messagePath
+            )
+
+            val isFailure = config.failureTerminationReasons.any {
+                result.terminationReason.contains(it)
+            }
+
+            return if (isFailure) {
+                AgentFailureResult(
+                    scenarioName = scenarioName,
+                    simulatorName = userName,
+                    messagePath = messagePath,
+                    errors = logger.getCapturedErrors(),
+                    failureReason = result.terminationReason,
+                )
+            } else {
+                result
+            }
+        } catch (e: Exception) {
+            return AgentFailureResult(
+                scenarioName = scenarioName,
+                simulatorName = userName,
+                messagePath = messagePath,
+                errors = logger.getCapturedErrors(),
+                failureReason = e.message,
+            )
         }
     }
 

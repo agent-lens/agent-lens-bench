@@ -3,6 +3,7 @@
   "default_branch": "main",
   "default_repo_hash": "2f9537c369ec84326c0aef337ac0948fa0657d55",
   "repo_url": "https://github.com/agent-lens/dataset/",
+  "num_attempts": 3,
   "agent_engine": {
     "type": "ExplytCommonAgentEngine"
   },
